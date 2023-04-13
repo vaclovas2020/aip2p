@@ -8,7 +8,6 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"github.com/libp2p/go-libp2p/core/host"
-	"webimizer.dev/aip2p/core"
 	"webimizer.dev/aip2p/core/node"
 )
 
@@ -33,9 +32,8 @@ const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
 
 // Start GUI Application main window
 func (gui *Gui) Start() {
-	go node.ReceiveExitSignal(gui.node)
 	gui.app = app.New()
-	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application %s build %d", core.VERSION, core.BUILD_NUMBER))
+	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application %s build %d", gui.app.Metadata().Version, gui.app.Metadata().Build))
 
 	gui.logText = fmt.Sprintln(START_LABEL_TEXT)
 	gui.text = widget.NewMultiLineEntry()
