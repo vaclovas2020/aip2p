@@ -43,7 +43,7 @@ func (gui *Gui) Start() {
 		gui.text.SetText(fmt.Sprintf("Listen on %v", peer.Addrs()))
 	})
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
-	gui.window.Resize(fyne.NewSize(300, 300))
+	gui.window.Resize(fyne.NewSize(400, 400))
 	gui.window.SetMaster()
 	gui.window.ShowAndRun()
 	if gui.node == nil {
