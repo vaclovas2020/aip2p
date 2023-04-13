@@ -19,11 +19,13 @@ type Gui struct {
 	// Main application window
 	window fyne.Window
 	// Main application text label widget
-	text *widget.Label
+	text *widget.Entry
 	// Start button widget
 	startBtn *widget.Button
 	// libp2p Node
 	node host.Host
+	//
+	logText string
 }
 
 // Start label text
@@ -35,23 +37,28 @@ func (gui *Gui) Start() {
 	gui.app = app.New()
 	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application %s build %d", core.VERSION, core.BUILD_NUMBER))
 
-	gui.text = widget.NewLabel(START_LABEL_TEXT)
+	gui.text = widget.NewMultiLineEntry()
+	gui.text.Disable()
+	gui.logText = fmt.Sprintln(START_LABEL_TEXT)
+	gui.text.SetText(gui.logText)
 	gui.startBtn = widget.NewButton("Start", func() {
 		if gui.node != nil {
 			node.StopListen(gui.node)
 			gui.node = nil
 			gui.startBtn.SetText("Start")
-			gui.text.SetText(START_LABEL_TEXT)
+			gui.logText += fmt.Sprintln("Stopped.")
+			gui.logText += fmt.Sprintln(START_LABEL_TEXT)
+			gui.text.SetText(gui.logText)
 			return
 		}
-		gui.text.SetText("Starting node...")
 		peer, err := node.Listen()
 		if err != nil {
 			panic(err)
 		}
 		gui.node = peer
 		gui.startBtn.SetText("Stop")
-		gui.text.SetText(fmt.Sprintf("Listen on %v", peer.Addrs()))
+		gui.logText += fmt.Sprintf("Listen on %v\n", peer.Addrs())
+		gui.text.SetText(gui.logText)
 	})
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
 	gui.window.Resize(fyne.NewSize(600, 400))
