@@ -1,8 +1,8 @@
 Website = "https://aip2p.app"
 
 [Details]
-Icon = "Icon.png"
-Name = "AIP2P Application"
-ID = "app.aip2p.app"
-Version = "0.0.4"
-Build = 4
+  Icon = "Icon.png"
+  Name = "AIP2P"
+  ID = "app.aip2p.app"
+  Version = "0.0.4"
+  Build = 4
