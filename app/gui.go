@@ -23,8 +23,8 @@ type Gui struct {
 	// Start button widget
 	startBtn *widget.Button
 	// libp2p Node
-	node host.Host
-	//
+	node *host.Host
+	// log text string
 	logText string
 }
 
@@ -58,7 +58,7 @@ func (gui *Gui) Start() {
 		}
 		gui.node = peer
 		gui.startBtn.SetText("Stop")
-		gui.logText += fmt.Sprintf("Listen on %v\n", peer.Addrs())
+		gui.logText += fmt.Sprintf("Listen on %v\n", (*peer).Addrs())
 		gui.text.SetText(gui.logText)
 	})
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))

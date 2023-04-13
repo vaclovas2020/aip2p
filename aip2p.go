@@ -1,10 +1,10 @@
-package aip2p
+package main
 
 import (
 	"webimizer.dev/aip2p/app"
 )
 
-func StartApplicationGUI() {
+func main() {
 	gui := new(app.Gui)
 	gui.Start()
 }
