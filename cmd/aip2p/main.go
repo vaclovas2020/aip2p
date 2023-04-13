@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	aip2p.StartApplication()
+	aip2p.StartApplicationGUI()
 }
