@@ -37,10 +37,11 @@ func (gui *Gui) Start() {
 	gui.app = app.New()
 	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application %s build %d", core.VERSION, core.BUILD_NUMBER))
 
-	gui.text = widget.NewMultiLineEntry()
-	gui.text.Disable()
 	gui.logText = fmt.Sprintln(START_LABEL_TEXT)
+	gui.text = widget.NewMultiLineEntry()
 	gui.text.SetText(gui.logText)
+	gui.text.Disable()
+	gui.text.SetMinRowsVisible(10)
 	gui.startBtn = widget.NewButton("Start", func() {
 		if gui.node != nil {
 			node.StopListen(gui.node)
