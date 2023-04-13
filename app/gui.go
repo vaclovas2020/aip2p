@@ -26,30 +26,38 @@ type Gui struct {
 	node host.Host
 }
 
+// Start label text
+const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
+
 // Start GUI Application main window
 func (gui *Gui) Start() {
+	go node.ReceiveExitSignal(gui.node)
 	gui.app = app.New()
 	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application %s build %d", core.VERSION, core.BUILD_NUMBER))
 
-	gui.text = widget.NewLabel("Start new AIP2P node with \"Start\" button.")
+	gui.text = widget.NewLabel(START_LABEL_TEXT)
 	gui.startBtn = widget.NewButton("Start", func() {
-		gui.startBtn.Disable()
+		if gui.node != nil {
+			node.StopListen(gui.node)
+			gui.node = nil
+			gui.startBtn.SetText("Start")
+			gui.text.SetText(START_LABEL_TEXT)
+			return
+		}
 		gui.text.SetText("Starting node...")
 		peer, err := node.Listen()
 		if err != nil {
 			panic(err)
 		}
 		gui.node = peer
+		gui.startBtn.SetText("Stop")
 		gui.text.SetText(fmt.Sprintf("Listen on %v", peer.Addrs()))
 	})
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
 	gui.window.Resize(fyne.NewSize(400, 400))
 	gui.window.SetMaster()
 	gui.window.ShowAndRun()
-	if gui.node == nil {
-		return
-	}
-	if err := gui.node.Close(); err != nil {
-		panic(err)
+	if gui.node != nil {
+		node.StopListen(gui.node)
 	}
 }
