@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/widget"
 	"github.com/libp2p/go-libp2p/core/host"
 	"webimizer.dev/aip2p/core/node"
@@ -62,6 +63,16 @@ func (gui *Gui) Start() {
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
 	gui.window.Resize(fyne.NewSize(600, 400))
 	gui.window.SetMaster()
+	if desk, ok := gui.app.(desktop.App); ok {
+		m := fyne.NewMenu("AIP2P",
+			fyne.NewMenuItem("Show", func() {
+				gui.window.Show()
+			}))
+		desk.SetSystemTrayMenu(m)
+		gui.window.SetCloseIntercept(func() {
+			gui.window.Hide()
+		})
+	}
 	gui.window.ShowAndRun()
 	if gui.node != nil {
 		node.StopListen(gui.node)
