@@ -1,4 +1,4 @@
-# AIP2P Protocol implementation
+# AIP2P Application
 
 [![Go Reference](https://pkg.go.dev/badge/webimizer.dev/aip2p.svg)](https://pkg.go.dev/webimizer.dev/aip2p)
 
