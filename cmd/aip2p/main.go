@@ -2,9 +2,9 @@
 package main
 
 import (
-	"webimizer.dev/aip2p/core"
+	"webimizer.dev/aip2p"
 )
 
 func main() {
-	core.StartApplication()
+	aip2p.StartApplication()
 }
