@@ -62,6 +62,8 @@ func (gui *Gui) Start() {
 	})
 	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
 	gui.window.Resize(fyne.NewSize(600, 400))
+	gui.window.SetFixedSize(true)
+	gui.window.CenterOnScreen()
 	gui.window.SetMaster()
 	if desk, ok := gui.app.(desktop.App); ok {
 		m := fyne.NewMenu("AIP2P",
