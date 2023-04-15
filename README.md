@@ -1,6 +1,12 @@
 # AIP2P Application
 
+Mac OS version (screenshot)
+
 ![Aip2p](J68poh.png "Aip2p")
+
+Windows (64-bit)  vesion (screenshot)
+
+![Aip2pWin64](Win64.png "Aip2p Win64")
 
 [![Go Reference](https://pkg.go.dev/badge/webimizer.dev/aip2p.svg)](https://pkg.go.dev/webimizer.dev/aip2p)
 
