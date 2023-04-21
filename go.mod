@@ -4,6 +4,8 @@ go 1.20
 
 require github.com/libp2p/go-libp2p v0.27.0
 
+require github.com/MasterOfBinary/go-opencl v0.0.0-20161217130610-e11c0e14990e
+
 require (
 	fyne.io/systray v1.10.1-0.20230312215936-7f71b037e260 // indirect
 	github.com/benoitkugler/textlayout v0.3.0 // indirect
@@ -19,6 +21,7 @@ require (
 	github.com/goki/freetype v0.0.0-20220119013949-7a161fd3728c // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
+	github.com/passkeyra/go-opencl v0.0.0-20220406222639-89fc1cb60037
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20220731023508-a61f04f16b76 // indirect
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect

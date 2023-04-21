@@ -44,6 +44,10 @@ fyne.io/fyne/v2/widget
 fyne.io/systray
 fyne.io/systray/internal/generated/menu
 fyne.io/systray/internal/generated/notifier
+# github.com/MasterOfBinary/go-opencl v0.0.0-20161217130610-e11c0e14990e
+## explicit
+github.com/MasterOfBinary/go-opencl
+github.com/MasterOfBinary/go-opencl/opencl
 # github.com/benbjohnson/clock v1.3.0
 ## explicit; go 1.15
 github.com/benbjohnson/clock
@@ -388,6 +392,8 @@ github.com/onsi/ginkgo/v2/types
 # github.com/opencontainers/runtime-spec v1.0.2
 ## explicit
 github.com/opencontainers/runtime-spec/specs-go
+# github.com/passkeyra/go-opencl v0.0.0-20220406222639-89fc1cb60037
+## explicit
 # github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58
 ## explicit; go 1.16
 github.com/pbnjay/memory
