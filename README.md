@@ -10,6 +10,8 @@ Windows (64-bit)  version (screenshot)
 
 ![Aip2pWin64](Win64.png "Aip2p Win64")
 
+[Download Windows setup (x64)](https://aip2p.app/downloads/Aip2pSetup.msi)
+
 Distributed Artificial Intelligens protocol implementation base on [libp2p](https://libp2p.io). Peer(s) share CPU and GPU resources with each other and makes Distributed Neural Network (DNN).
 
 ## Setup steps:
