@@ -37,6 +37,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -53,6 +69,22 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:.NETFramework,Version=v4.7.2"
+                    {
+                    "Name" = "8:Microsoft .NET Framework 4.7.2 (x86 and x64)"
+                    "ProductCode" = "8:.NETFramework,Version=v4.7.2"
+                    }
+                }
+            }
         }
     }
     "Deployable"
@@ -151,7 +183,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:Aip2pSetup"
         "ProductCode" = "8:{7C3F7159-21A4-4727-8B1A-A7E748181F65}"
-        "PackageCode" = "8:{3EDABC89-73BD-49DA-862C-E922CD6CE8E3}"
+        "PackageCode" = "8:{0F57CC62-F16A-4E2C-98B5-2D3C748CB392}"
         "UpgradeCode" = "8:{8C0021CD-5814-4D3C-9F3B-2328C640EE16}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
@@ -277,12 +309,12 @@
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
+            "IconIndex" = "3:2"
             "Transitive" = "11:FALSE"
             "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Folder" = "8:_4EAA4E3F42F04386AAB7E199D3CDD98F"
             "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
-            "Icon" = "8:"
+            "Icon" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Feature" = "8:"
             }
             "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_6D315D0999564E16BEB095C984D0A308"
@@ -291,12 +323,12 @@
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
+            "IconIndex" = "3:2"
             "Transitive" = "11:FALSE"
             "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Folder" = "8:_10BDE4FCF4984151A11D321A6ACB1934"
             "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
-            "Icon" = "8:"
+            "Icon" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Feature" = "8:"
             }
         }
