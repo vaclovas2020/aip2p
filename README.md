@@ -4,7 +4,7 @@
 
 Mac OS version (screenshot)
 
-![Aip2p](J68poh.png "Aip2p")
+![Aip2p MacOS](J68poh.png "Aip2p MacOS")
 
 Windows (64-bit)  version (screenshot)
 
