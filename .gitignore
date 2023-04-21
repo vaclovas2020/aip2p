@@ -3,3 +3,5 @@ AIP2P.app
 .DS_Store
 aip2p
 AIP2P.exe
+windows/Aip2pSetup/Debug
+windows/Aip2pSetup/Release

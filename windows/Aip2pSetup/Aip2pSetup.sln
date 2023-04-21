@@ -7,14 +7,14 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Aip2pSetup", "Aip2pSetup.vd
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Default = Debug|Default
-		Release|Default = Release|Default
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Debug|Default.ActiveCfg = Debug
-		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Debug|Default.Build.0 = Debug
-		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Release|Default.ActiveCfg = Release
-		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Release|Default.Build.0 = Release
+		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Debug|x64.ActiveCfg = Debug
+		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Debug|x64.Build.0 = Debug
+		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Release|x64.ActiveCfg = Release
+		{9156FD5C-187F-4CE2-A0CD-E72C5EB443FF}.Release|x64.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
