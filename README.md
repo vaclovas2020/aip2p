@@ -4,6 +4,10 @@
 
 NOTICE: We will provide installable packages for Windows & Mac OS soon, so you don't need to download source code anymore. We currently only support Windows (64-bit) and Mac OS platforms.
 
+packages/aip2p.dmg
+
+[Download fow Mac OS](packages/aip2p.dmg "download")
+
 Mac OS version (screenshot)
 
 ![Aip2p](J68poh.png "Aip2p")
