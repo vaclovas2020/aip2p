@@ -5,3 +5,6 @@ aip2p
 AIP2P.exe
 windows/Aip2pSetup/Debug
 windows/Aip2pSetup/Release
+.vs
+.vscode
+.idea
