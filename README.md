@@ -1,14 +1,16 @@
 # AIP2P Application
 
+[![Go Reference](https://pkg.go.dev/badge/webimizer.dev/aip2p.svg)](https://pkg.go.dev/webimizer.dev/aip2p)
+
+NOTICE: We will provide installable packages for Windows & Mac OS soon, so you don't need to download source code anymore. We currently only support Windows (64-bit) and Mac OS platforms.
+
 Mac OS version (screenshot)
 
 ![Aip2p](J68poh.png "Aip2p")
 
-Windows (64-bit)  vesion (screenshot)
+Windows (64-bit)  version (screenshot)
 
 ![Aip2pWin64](Win64.png "Aip2p Win64")
-
-[![Go Reference](https://pkg.go.dev/badge/webimizer.dev/aip2p.svg)](https://pkg.go.dev/webimizer.dev/aip2p)
 
 Distributed Artificial Intelligens protocol implementation base on [libp2p](https://libp2p.io). Peer(s) share CPU and GPU resources with each other and makes Distributed Neural Network (DNN).
 
