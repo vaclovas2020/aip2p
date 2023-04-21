@@ -13,6 +13,12 @@
 "SccProvider" = "8:"
     "Hierarchy"
     {
+        "Entry"
+        {
+        "MsmKey" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
     }
     "Configurations"
     {
@@ -68,6 +74,26 @@
         }
         "File"
         {
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6960B6F3E74A4E77B066DD87320C2A90"
+            {
+            "SourcePath" = "8:..\\..\\AIP2P.exe"
+            "TargetName" = "8:AIP2P.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
         }
         "FileType"
         {
@@ -245,6 +271,34 @@
         }
         "Shortcut"
         {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_4C6CDFF4A5AA4D43814736F84D1207A6"
+            {
+            "Name" = "8:AIP2P"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
+            "Folder" = "8:_4EAA4E3F42F04386AAB7E199D3CDD98F"
+            "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_6D315D0999564E16BEB095C984D0A308"
+            {
+            "Name" = "8:AIP2P"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
+            "Folder" = "8:_10BDE4FCF4984151A11D321A6ACB1934"
+            "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
+            "Icon" = "8:"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
