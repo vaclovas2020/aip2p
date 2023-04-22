@@ -6,6 +6,8 @@ Mac OS version (screenshot)
 
 ![Aip2p MacOS](J68poh.png "Aip2p MacOS")
 
+[Download MacOS application (x64)](https://aip2p.app/downloads/aip2p.dmg)
+
 Windows (64-bit)  version (screenshot)
 
 ![Aip2pWin64](Win64.png "Aip2p Win64")
