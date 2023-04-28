@@ -36,7 +36,10 @@ const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
 func (gui *Gui) Start() {
 	_, err := os.Open(".lock")
 	if err != nil && os.IsNotExist(err) {
-		os.Create(".lock")
+		f, err := os.Create(".lock")
+		if err != nil {
+			f.Write([]byte("1"))
+		}
 		gui.app = app.New()
 		gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application v%s build %d", gui.app.Metadata().Version, gui.app.Metadata().Build))
 
