@@ -4,5 +4,5 @@ Website = "https://aip2p.app"
   Icon = "Icon.png"
   Name = "AIP2P"
   ID = "app.aip2p.app"
-  Version = "0.0.10"
-  Build = 10
+  Version = "0.0.11"
+  Build = 11
