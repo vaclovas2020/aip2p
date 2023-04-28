@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -33,50 +34,59 @@ const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
 
 // Start GUI Application main window
 func (gui *Gui) Start() {
-	gui.app = app.New()
-	gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application v%s build %d", gui.app.Metadata().Version, gui.app.Metadata().Build))
+	_, err := os.Open(".lock")
+	if err != nil && os.IsNotExist(err) {
+		os.Create(".lock")
+		gui.app = app.New()
+		gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application v%s build %d", gui.app.Metadata().Version, gui.app.Metadata().Build))
 
-	gui.logText = fmt.Sprintln(START_LABEL_TEXT)
-	gui.text = widget.NewMultiLineEntry()
-	gui.text.SetText(gui.logText)
-	gui.text.Disable()
-	gui.text.SetMinRowsVisible(10)
-	gui.startBtn = widget.NewButton("Start", func() {
+		gui.logText = fmt.Sprintln(START_LABEL_TEXT)
+		gui.text = widget.NewMultiLineEntry()
+		gui.text.SetText(gui.logText)
+		gui.text.Disable()
+		gui.text.SetMinRowsVisible(10)
+		gui.startBtn = widget.NewButton("Start", func() {
+			if gui.node != nil {
+				node.StopListen(gui.node)
+				gui.node = nil
+				gui.startBtn.SetText("Start")
+				gui.logText += fmt.Sprintln("Stopped.")
+				gui.logText += fmt.Sprintln(START_LABEL_TEXT)
+				gui.text.SetText(gui.logText)
+				return
+			}
+			peer, err := node.Listen()
+			if err != nil {
+				panic(err)
+			}
+			gui.node = peer
+			gui.startBtn.SetText("Stop")
+			gui.logText += fmt.Sprintf("Listen on %v\n", (*peer).Addrs()[0])
+			gui.text.SetText(gui.logText)
+		})
+		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
+		gui.window.Resize(fyne.NewSize(600, 400))
+		gui.window.SetFixedSize(true)
+		gui.window.CenterOnScreen()
+		gui.window.SetMaster()
+		if desk, ok := gui.app.(desktop.App); ok {
+			m := fyne.NewMenu("AIP2P",
+				fyne.NewMenuItem("Show", func() {
+					gui.window.Show()
+				}))
+			desk.SetSystemTrayMenu(m)
+			gui.window.SetCloseIntercept(func() {
+				gui.window.Hide()
+			})
+		}
+		if len(os.Args) > 1 && os.Args[1] == "systray" {
+			gui.app.Run()
+		} else {
+			gui.window.ShowAndRun()
+		}
 		if gui.node != nil {
 			node.StopListen(gui.node)
-			gui.node = nil
-			gui.startBtn.SetText("Start")
-			gui.logText += fmt.Sprintln("Stopped.")
-			gui.logText += fmt.Sprintln(START_LABEL_TEXT)
-			gui.text.SetText(gui.logText)
-			return
 		}
-		peer, err := node.Listen()
-		if err != nil {
-			panic(err)
-		}
-		gui.node = peer
-		gui.startBtn.SetText("Stop")
-		gui.logText += fmt.Sprintf("Listen on %v\n", (*peer).Addrs())
-		gui.text.SetText(gui.logText)
-	})
-	gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
-	gui.window.Resize(fyne.NewSize(600, 400))
-	gui.window.SetFixedSize(true)
-	gui.window.CenterOnScreen()
-	gui.window.SetMaster()
-	if desk, ok := gui.app.(desktop.App); ok {
-		m := fyne.NewMenu("AIP2P",
-			fyne.NewMenuItem("Show", func() {
-				gui.window.Show()
-			}))
-		desk.SetSystemTrayMenu(m)
-		gui.window.SetCloseIntercept(func() {
-			gui.window.Hide()
-		})
-	}
-	gui.window.ShowAndRun()
-	if gui.node != nil {
-		node.StopListen(gui.node)
+		os.Remove(".lock")
 	}
 }
