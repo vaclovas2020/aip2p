@@ -180,6 +180,17 @@
                 {
                 }
             }
+            "{1525181F-901A-416C-8A58-119130FE478E}:_5012634317774E129F0D5E6FBCFD7912"
+            {
+            "Name" = "8:#1915"
+            "AlwaysCreate" = "11:TRUE"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Property" = "8:AppDataFolder"
+                "Folders"
+                {
+                }
+            }
             "{3C67513D-01DD-4637-8A68-80971EB9504F}:_CE1D43DC5E154A1697384BC87B6A3541"
             {
             "DefaultLocation" = "8:[ProgramFiles64Folder][Manufacturer]\\[ProductName]"
@@ -208,15 +219,15 @@
         {
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:AIP2P Application"
-        "ProductCode" = "8:{A03EA4E8-0CAC-41F2-BD31-F9B19A6E9D3D}"
-        "PackageCode" = "8:{B33F998A-5238-4F3D-B6FD-50EBCD33E489}"
+        "ProductCode" = "8:{9C0356BD-E304-49A4-A50A-26E70526C0DD}"
+        "PackageCode" = "8:{C6853E43-12A0-4BE4-A2F0-71A53DB3C8D5}"
         "UpgradeCode" = "8:{8C0021CD-5814-4D3C-9F3B-2328C640EE16}"
         "AspNetVersion" = "8:2.0.50727.0"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:TRUE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:TRUE"
-        "ProductVersion" = "8:0.0.12"
+        "ProductVersion" = "8:0.0.13"
         "Manufacturer" = "8:AIP2P.APP Team"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://aip2p.app"
@@ -339,7 +350,7 @@
             "Transitive" = "11:TRUE"
             "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Folder" = "8:_4EAA4E3F42F04386AAB7E199D3CDD98F"
-            "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
+            "WorkingFolder" = "8:_5012634317774E129F0D5E6FBCFD7912"
             "Icon" = "8:_D5616FE719BE4E7CBCC8F0E3FCFC1CAF"
             "Feature" = "8:"
             }
@@ -353,7 +364,7 @@
             "Transitive" = "11:TRUE"
             "Target" = "8:_6960B6F3E74A4E77B066DD87320C2A90"
             "Folder" = "8:_10BDE4FCF4984151A11D321A6ACB1934"
-            "WorkingFolder" = "8:_CE1D43DC5E154A1697384BC87B6A3541"
+            "WorkingFolder" = "8:_5012634317774E129F0D5E6FBCFD7912"
             "Icon" = "8:_D5616FE719BE4E7CBCC8F0E3FCFC1CAF"
             "Feature" = "8:"
             }
