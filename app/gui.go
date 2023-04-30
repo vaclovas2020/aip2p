@@ -23,6 +23,8 @@ type Gui struct {
 	text *widget.Entry
 	// Start button widget
 	startBtn *widget.Button
+	// Copy button widget
+	copyBtn *widget.Button
 	// libp2p Node
 	node *host.Host
 	// log text string
@@ -58,6 +60,7 @@ func (gui *Gui) Start() {
 				gui.logText += fmt.Sprintln("Stopped.")
 				gui.logText += fmt.Sprintln(START_LABEL_TEXT)
 				gui.text.SetText(gui.logText)
+				gui.copyBtn.Disable()
 				return
 			}
 			peer, err := node.Listen()
@@ -73,8 +76,15 @@ func (gui *Gui) Start() {
 			gui.startBtn.SetText("Stop")
 			gui.logText += fmt.Sprintf("libp2p node address: %v\n", addrs[0])
 			gui.text.SetText(gui.logText)
+			gui.copyBtn.Enable()
 		})
-		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
+		gui.copyBtn = widget.NewButton("Copy Address", func() {
+			if gui.address != "" {
+				gui.window.Clipboard().SetContent(gui.address)
+			}
+		})
+		gui.copyBtn.Disable()
+		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn, gui.copyBtn))
 		gui.window.Resize(fyne.NewSize(600, 400))
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
