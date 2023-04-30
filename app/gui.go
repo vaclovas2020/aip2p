@@ -27,6 +27,8 @@ type Gui struct {
 	node *host.Host
 	// log text string
 	logText string
+	// current node Address
+	address string
 }
 
 // Start label text
@@ -62,9 +64,14 @@ func (gui *Gui) Start() {
 			if err != nil {
 				panic(err)
 			}
+			addrs, err := node.GetAddress(peer)
+			if err != nil {
+				panic(err)
+			}
 			gui.node = peer
+			gui.address = addrs[0].String()
 			gui.startBtn.SetText("Stop")
-			gui.logText += fmt.Sprintf("Listen on %v\n", (*peer).Addrs()[0])
+			gui.logText += fmt.Sprintf("libp2p node address: %v\n", addrs[0])
 			gui.text.SetText(gui.logText)
 		})
 		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn))
