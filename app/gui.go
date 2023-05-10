@@ -160,7 +160,7 @@ func (gui *Gui) Start() {
 		gui.progressbar.Stop()
 		gui.progressbar.Hide()
 		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
-		gui.window.Resize(fyne.NewSize(905, 600))
+		gui.window.Resize(fyne.NewSize(903, 600))
 		gui.window.SetPadded(false)
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
