@@ -144,8 +144,10 @@ func (gui *Gui) Start() {
 					}
 				}
 			})
+		gui.connectionsTable.SetColumnWidth(0, 445)
+		gui.connectionsTable.SetColumnWidth(1, 445)
 		gui.tabs = container.NewAppTabs(
-			container.NewTabItem("Start Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
+			container.NewTabItem("P2P Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
 			container.NewTabItem("Connections", container.NewVBox(gui.connectionsTable)),
 		)
 		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
@@ -154,6 +156,7 @@ func (gui *Gui) Start() {
 		gui.progressbar.Hide()
 		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
 		gui.window.Resize(fyne.NewSize(900, 600))
+		gui.window.SetPadded(false)
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
 		gui.window.SetMaster()
