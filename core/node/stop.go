@@ -4,11 +4,9 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
-func StopListen(node *host.Host) {
+func StopListen(node *host.Host) error {
 	if node == nil {
-		return
+		return nil
 	}
-	if err := (*node).Close(); err != nil {
-		panic(err)
-	}
+	return (*node).Close()
 }

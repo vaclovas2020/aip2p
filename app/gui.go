@@ -1,3 +1,4 @@
+// Implements AIP2P GUI Application based on fyne.io/fyne
 package app
 
 import (
@@ -10,6 +11,7 @@ import (
 	"fyne.io/fyne/v2/driver/desktop"
 	"fyne.io/fyne/v2/widget"
 	"github.com/libp2p/go-libp2p/core/host"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"webimizer.dev/aip2p/core/node"
 )
 
@@ -25,16 +27,40 @@ type Gui struct {
 	startBtn *widget.Button
 	// Copy button widget
 	copyBtn *widget.Button
+	// Connections list widget
+	connectionsList *widget.List
+	// Connect text widget
+	connText *widget.Entry
+	// Connect button widget
+	connBtn *widget.Button
+	// Progress bar widget
+	progressbar *widget.ProgressBarInfinite
+	// Status text label widget
+	statusTextLabel *widget.Label
+	// Main application tabs widget
+	tabs *container.AppTabs
 	// libp2p Node
 	node *host.Host
 	// log text string
 	logText string
 	// current node Address
 	address string
+	// Existing peer connections
+	connections []*peer.AddrInfo
+	// Connection Text widget text
+	connectText string
 }
 
 // Start label text
 const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
+const STATUS_TEXT_STOPPED = "Stopped."
+const STATUS_TEDXT_STOPPING = "Stopping..."
+const STATUS_TEXT_CONNECTING = "Connecting..."
+const STATUS_TEXT_CONNECTED = "Connected."
+const STATUS_TEXT_DISCONNECTED = "Disconnected."
+const STATUS_TEXT_STARTING = "Starting..."
+const STATUS_TEXT_STARTED = "Started."
+const STATUS_TEXT_ERROR = "Error."
 
 // Start GUI Application main window
 func (gui *Gui) Start() {
@@ -51,25 +77,36 @@ func (gui *Gui) Start() {
 		gui.text = widget.NewMultiLineEntry()
 		gui.text.SetText(gui.logText)
 		gui.text.Disable()
-		gui.text.SetMinRowsVisible(10)
+		gui.text.SetMinRowsVisible(20)
 		gui.startBtn = widget.NewButton("Start", func() {
+			gui.progressbar.Start()
 			if gui.node != nil {
-				node.StopListen(gui.node)
+				gui.statusTextLabel.SetText(STATUS_TEDXT_STOPPING)
+				err = node.StopListen(gui.node)
+				if err != nil {
+					gui.LogError(err)
+					return
+				}
 				gui.node = nil
 				gui.startBtn.SetText("Start")
 				gui.logText += fmt.Sprintln("Stopped.")
 				gui.logText += fmt.Sprintln(START_LABEL_TEXT)
 				gui.text.SetText(gui.logText)
 				gui.copyBtn.Disable()
+				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPED)
+				gui.progressbar.Stop()
 				return
 			}
+			gui.statusTextLabel.SetText(STATUS_TEXT_STARTING)
 			peer, err := node.Listen()
 			if err != nil {
-				panic(err)
+				gui.LogError(err)
+				return
 			}
 			addrs, err := node.GetAddress(peer)
 			if err != nil {
-				panic(err)
+				gui.LogError(err)
+				return
 			}
 			gui.node = peer
 			gui.address = addrs[0].String()
@@ -77,6 +114,8 @@ func (gui *Gui) Start() {
 			gui.logText += fmt.Sprintf("libp2p node address: %v\n", addrs[0])
 			gui.text.SetText(gui.logText)
 			gui.copyBtn.Enable()
+			gui.statusTextLabel.SetText(STATUS_TEXT_STARTED)
+			gui.progressbar.Stop()
 		})
 		gui.copyBtn = widget.NewButton("Copy Address", func() {
 			if gui.address != "" {
@@ -84,8 +123,25 @@ func (gui *Gui) Start() {
 			}
 		})
 		gui.copyBtn.Disable()
-		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn, gui.copyBtn))
-		gui.window.Resize(fyne.NewSize(600, 600))
+		gui.connectionsList = widget.NewList(
+			func() int {
+				return len(gui.connections)
+			},
+			func() fyne.CanvasObject {
+				return widget.NewLabel("")
+			},
+			func(i widget.ListItemID, o fyne.CanvasObject) {
+				o.(*widget.Label).SetText(gui.connections[i].String())
+			})
+		gui.tabs = container.NewAppTabs(
+			container.NewTabItem("Start Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
+			container.NewTabItem("Connections", container.NewVBox(gui.connectionsList)),
+		)
+		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
+		gui.progressbar = widget.NewProgressBarInfinite()
+		gui.progressbar.Stop()
+		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
+		gui.window.Resize(fyne.NewSize(900, 600))
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
 		gui.window.SetMaster()
@@ -109,4 +165,11 @@ func (gui *Gui) Start() {
 		}
 		os.Remove("aip2p.lock")
 	}
+}
+
+func (gui *Gui) LogError(err error) {
+	gui.statusTextLabel.SetText(STATUS_TEXT_ERROR)
+	gui.progressbar.Stop()
+	gui.logText += fmt.Sprintf("Error: %v\n", err)
+	gui.text.SetText(gui.logText)
 }
