@@ -79,6 +79,7 @@ func (gui *Gui) Start() {
 		gui.text.Disable()
 		gui.text.SetMinRowsVisible(20)
 		gui.startBtn = widget.NewButton("Start", func() {
+			gui.progressbar.Show()
 			gui.progressbar.Start()
 			if gui.node != nil {
 				gui.statusTextLabel.SetText(STATUS_TEDXT_STOPPING)
