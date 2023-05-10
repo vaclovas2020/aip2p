@@ -95,6 +95,7 @@ func (gui *Gui) Start() {
 				gui.copyBtn.Disable()
 				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPED)
 				gui.progressbar.Stop()
+				gui.progressbar.Hide()
 				return
 			}
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTING)
@@ -116,6 +117,7 @@ func (gui *Gui) Start() {
 			gui.copyBtn.Enable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTED)
 			gui.progressbar.Stop()
+			gui.progressbar.Hide()
 		})
 		gui.copyBtn = widget.NewButton("Copy Address", func() {
 			if gui.address != "" {
@@ -140,6 +142,7 @@ func (gui *Gui) Start() {
 		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
 		gui.progressbar = widget.NewProgressBarInfinite()
 		gui.progressbar.Stop()
+		gui.progressbar.Hide()
 		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
 		gui.window.Resize(fyne.NewSize(900, 600))
 		gui.window.SetFixedSize(true)
