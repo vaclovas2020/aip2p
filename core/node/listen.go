@@ -6,11 +6,11 @@ import (
 	"github.com/libp2p/go-libp2p/core/host"
 )
 
-// Listen on tcp/ip4 and tcp/ip6 on port 7777
+// Listen on tcp/ip4 and tcp/ip6 on random port
 func Listen() (*host.Host, error) {
 	node, err := libp2p.New(
 		libp2p.ListenAddrStrings(
-			"/ip4/0.0.0.0/tcp/7777",
+			"/ip4/0.0.0.0/tcp/0",
 		),
 	)
 	return &node, err
