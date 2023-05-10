@@ -4,11 +4,14 @@ package app
 import (
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/driver/desktop"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -47,20 +50,18 @@ type Gui struct {
 	address string
 	// Existing peer connections
 	connections []*peer.AddrInfo
-	// Connection Text widget text
-	connectText string
 }
 
 // Start label text
 const START_LABEL_TEXT string = "Start new AIP2P node with \"Start\" button."
+const STATUS_TEXT_READY = "Ready."
 const STATUS_TEXT_STOPPED = "Stopped."
-const STATUS_TEDXT_STOPPING = "Stopping..."
+const STATUS_TEXT_STOPPING = "Stopping..."
 const STATUS_TEXT_CONNECTING = "Connecting..."
 const STATUS_TEXT_CONNECTED = "Connected."
 const STATUS_TEXT_DISCONNECTED = "Disconnected."
 const STATUS_TEXT_STARTING = "Starting..."
 const STATUS_TEXT_STARTED = "Started."
-const STATUS_TEXT_ERROR = "Error."
 
 // Start GUI Application main window
 func (gui *Gui) Start() {
@@ -73,16 +74,16 @@ func (gui *Gui) Start() {
 		gui.app = app.New()
 		gui.window = gui.app.NewWindow(fmt.Sprintf("AIP2P Application v%s build %d", gui.app.Metadata().Version, gui.app.Metadata().Build))
 
-		gui.logText = fmt.Sprintln(START_LABEL_TEXT)
 		gui.text = widget.NewMultiLineEntry()
+		gui.logText = "Welcome to AIP2P Application!\n"
 		gui.text.SetText(gui.logText)
 		gui.text.Disable()
-		gui.text.SetMinRowsVisible(20)
+		gui.text.SetMinRowsVisible(25)
 		gui.startBtn = widget.NewButton("Start", func() {
 			gui.progressbar.Show()
 			gui.progressbar.Start()
 			if gui.node != nil {
-				gui.statusTextLabel.SetText(STATUS_TEDXT_STOPPING)
+				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPING)
 				err = node.StopListen(gui.node)
 				if err != nil {
 					gui.LogError(err)
@@ -90,11 +91,11 @@ func (gui *Gui) Start() {
 				}
 				gui.node = nil
 				gui.startBtn.SetText("Start")
-				gui.logText += fmt.Sprintln("Stopped.")
-				gui.logText += fmt.Sprintln(START_LABEL_TEXT)
+				gui.tabs.DisableIndex(1)
 				gui.text.SetText(gui.logText)
 				gui.copyBtn.Disable()
 				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPED)
+				gui.LogInfo(fmt.Sprintf("%s %s", STATUS_TEXT_STOPPED, START_LABEL_TEXT))
 				gui.progressbar.Stop()
 				gui.progressbar.Hide()
 				return
@@ -113,14 +114,15 @@ func (gui *Gui) Start() {
 			gui.node = peer
 			gui.address = addrs[0].String()
 			gui.startBtn.SetText("Stop")
-			gui.logText += fmt.Sprintf("libp2p node address: %v\n", addrs[0])
+			gui.tabs.EnableIndex(1)
+			gui.LogInfo(fmt.Sprintf("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[0].String()))
 			gui.text.SetText(gui.logText)
 			gui.copyBtn.Enable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTED)
 			gui.progressbar.Stop()
 			gui.progressbar.Hide()
 		})
-		gui.copyBtn = widget.NewButton("Copy Address", func() {
+		gui.copyBtn = widget.NewButton("Copy Connection String", func() {
 			if gui.address != "" {
 				gui.window.Clipboard().SetContent(gui.address)
 			}
@@ -148,19 +150,77 @@ func (gui *Gui) Start() {
 					}
 				}
 			})
-		gui.connectionsTable.SetColumnWidth(0, 400)
-		gui.connectionsTable.SetColumnWidth(1, 400)
-		gui.connectionsTable.SetColumnWidth(2, 90)
+		gui.connectionsTable.SetColumnWidth(0, 450)
+		gui.connectionsTable.SetColumnWidth(1, 450)
+		gui.connectionsTable.SetColumnWidth(2, 100)
+		gui.connText = widget.NewEntry()
+		gui.connText.SetPlaceHolder("Paste Connection String here...")
+
+		gui.connBtn = widget.NewButton("Connect", func() {
+			gui.progressbar.Show()
+			gui.progressbar.Start()
+			gui.connBtn.Disable()
+			gui.connText.Disable()
+			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTING)
+			gui.LogInfo(fmt.Sprintf("Connecting to %v...", gui.connText.Text))
+			peer, err := node.Connect(gui.node, gui.connText.Text)
+			if err != nil {
+				gui.LogError(err)
+				gui.connBtn.Enable()
+				gui.connText.Enable()
+				return
+			}
+			gui.connections = append(gui.connections, peer)
+			gui.connectionsTable.Refresh()
+			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTED)
+			gui.LogInfo(fmt.Sprintf("Connected to %v.", gui.connText.Text))
+			gui.connText.SetText("")
+			gui.connText.Enable()
+			gui.progressbar.Stop()
+			gui.progressbar.Hide()
+		})
+		gui.connBtn.Disable()
+		gui.connText.OnChanged = func(text string) {
+			if text != "" && gui.node != nil {
+				gui.connBtn.Enable()
+			} else {
+				gui.connBtn.Disable()
+			}
+		}
 		gui.tabs = container.NewAppTabs(
-			container.NewTabItem("P2P Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
-			container.NewTabItem("Connections", container.NewVBox(widget.NewLabel("Existing connections:"), gui.connectionsTable)),
+			container.NewTabItem("P2P Node", container.NewVBox(
+				gui.text,
+				container.NewHBox(
+					gui.startBtn,
+					gui.copyBtn,
+				),
+			)),
+			container.NewTabItem("Connections", container.NewVBox(
+				container.NewMax(gui.connectionsTable),
+				container.New(
+					layout.NewFormLayout(),
+					widget.NewLabel("Add new connection:"),
+					gui.connText,
+				),
+				container.NewHBox(
+					gui.connBtn,
+				),
+			)),
 		)
-		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
+		gui.tabs.DisableIndex(1)
+		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_READY)
 		gui.progressbar = widget.NewProgressBarInfinite()
 		gui.progressbar.Stop()
 		gui.progressbar.Hide()
-		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
-		gui.window.Resize(fyne.NewSize(903, 600))
+		gui.window.SetContent(container.NewVBox(
+			gui.tabs,
+			widget.NewSeparator(),
+			container.NewHBox(
+				gui.statusTextLabel,
+				gui.progressbar,
+			)),
+		)
+		gui.window.Resize(fyne.NewSize(1024, 600))
 		gui.window.SetPadded(false)
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
@@ -175,6 +235,7 @@ func (gui *Gui) Start() {
 				gui.window.Hide()
 			})
 		}
+		gui.LogInfo(fmt.Sprintf("%s %s", STATUS_TEXT_READY, START_LABEL_TEXT))
 		if len(os.Args) > 1 && os.Args[1] == "systray" {
 			gui.app.Run()
 		} else {
@@ -188,8 +249,16 @@ func (gui *Gui) Start() {
 }
 
 func (gui *Gui) LogError(err error) {
-	gui.statusTextLabel.SetText(STATUS_TEXT_ERROR)
+	gui.statusTextLabel.SetText(fmt.Sprintf("Error: %v", err))
 	gui.progressbar.Stop()
-	gui.logText += fmt.Sprintf("Error: %v\n", err)
+	gui.progressbar.Hide()
+	gui.logText += fmt.Sprintf("[%s] Error: %v\n", time.Now().Format(time.RFC1123), err)
 	gui.text.SetText(gui.logText)
+	gui.text.CursorRow = strings.Count(gui.logText, "\n")
+}
+
+func (gui *Gui) LogInfo(info string) {
+	gui.logText += fmt.Sprintf("[%s] %v\n", time.Now().Format(time.RFC1123), info)
+	gui.text.SetText(gui.logText)
+	gui.text.CursorRow = strings.Count(gui.logText, "\n")
 }
