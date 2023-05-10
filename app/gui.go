@@ -127,35 +127,40 @@ func (gui *Gui) Start() {
 		})
 		gui.copyBtn.Disable()
 		gui.connectionsTable = widget.NewTable(
-			func() (int, int) { return len(gui.connections) + 1, 2 },    // Rows and columns
+			func() (int, int) { return len(gui.connections) + 1, 3 },    // Rows and columns
 			func() fyne.CanvasObject { return widget.NewLabel("Peer") }, // Header
 			func(tci widget.TableCellID, co fyne.CanvasObject) { // Cell
 				if tci.Row == 0 {
 					if tci.Col == 0 {
 						co.(*widget.Label).SetText("Address")
-					} else {
+					} else if tci.Col == 1 {
 						co.(*widget.Label).SetText("ID")
+					} else if tci.Col == 2 {
+						co.(*widget.Label).SetText("Status")
 					}
 				} else {
 					if tci.Col == 0 {
 						co.(*widget.Label).SetText(gui.connections[tci.Row].Addrs[0].String())
-					} else {
+					} else if tci.Col == 1 {
 						co.(*widget.Label).SetText(gui.connections[tci.Row].ID.String())
+					} else if tci.Col == 2 {
+						co.(*widget.Label).SetText("Connected")
 					}
 				}
 			})
-		gui.connectionsTable.SetColumnWidth(0, 445)
-		gui.connectionsTable.SetColumnWidth(1, 445)
+		gui.connectionsTable.SetColumnWidth(0, 400)
+		gui.connectionsTable.SetColumnWidth(1, 400)
+		gui.connectionsTable.SetColumnWidth(2, 90)
 		gui.tabs = container.NewAppTabs(
 			container.NewTabItem("P2P Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
-			container.NewTabItem("Connections", container.NewVBox(gui.connectionsTable)),
+			container.NewTabItem("Connections", container.NewVBox(widget.NewLabel("Existing connections:"), gui.connectionsTable)),
 		)
 		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
 		gui.progressbar = widget.NewProgressBarInfinite()
 		gui.progressbar.Stop()
 		gui.progressbar.Hide()
 		gui.window.SetContent(container.NewVBox(gui.tabs, widget.NewSeparator(), container.NewHBox(gui.statusTextLabel, gui.progressbar)))
-		gui.window.Resize(fyne.NewSize(900, 600))
+		gui.window.Resize(fyne.NewSize(905, 600))
 		gui.window.SetPadded(false)
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
