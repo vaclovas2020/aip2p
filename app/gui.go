@@ -62,6 +62,7 @@ const STATUS_TEXT_CONNECTED = "Connected."
 const STATUS_TEXT_DISCONNECTED = "Disconnected."
 const STATUS_TEXT_STARTING = "Starting..."
 const STATUS_TEXT_STARTED = "Started."
+const STATUS_TEXT_ERROR = "Error."
 
 // Start GUI Application main window
 func (gui *Gui) Start() {
@@ -249,7 +250,7 @@ func (gui *Gui) Start() {
 }
 
 func (gui *Gui) LogError(err error) {
-	gui.statusTextLabel.SetText(fmt.Sprintf("Error: %v", err))
+	gui.statusTextLabel.SetText(STATUS_TEXT_ERROR)
 	gui.progressbar.Stop()
 	gui.progressbar.Hide()
 	gui.logText += fmt.Sprintf("[%s] Error: %v\n", time.Now().Format(time.RFC1123), err)
