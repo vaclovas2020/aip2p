@@ -79,7 +79,7 @@ func (gui *Gui) Start() {
 		gui.logText = "Welcome to AIP2P Application!\n"
 		gui.text.SetText(gui.logText)
 		gui.text.Disable()
-		gui.text.SetMinRowsVisible(25)
+		gui.text.SetMinRowsVisible(20)
 		gui.startBtn = widget.NewButton("Start", func() {
 			gui.progressbar.Show()
 			gui.progressbar.Start()
@@ -93,6 +93,8 @@ func (gui *Gui) Start() {
 				gui.node = nil
 				gui.startBtn.SetText("Start")
 				gui.tabs.DisableIndex(1)
+				gui.connText.SetText("")
+				gui.connText.Disable()
 				gui.text.SetText(gui.logText)
 				gui.copyBtn.Disable()
 				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPED)
@@ -116,6 +118,7 @@ func (gui *Gui) Start() {
 			gui.address = addrs[0].String()
 			gui.startBtn.SetText("Stop")
 			gui.tabs.EnableIndex(1)
+			gui.connText.Enable()
 			gui.LogInfo(fmt.Sprintf("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[0].String()))
 			gui.text.SetText(gui.logText)
 			gui.copyBtn.Enable()
@@ -130,8 +133,13 @@ func (gui *Gui) Start() {
 		})
 		gui.copyBtn.Disable()
 		gui.connectionsTable = widget.NewTable(
-			func() (int, int) { return len(gui.connections) + 1, 3 },    // Rows and columns
-			func() fyne.CanvasObject { return widget.NewLabel("Peer") }, // Header
+			func() (int, int) {
+				if len(gui.connections) < 14 {
+					return 14, 3
+				}
+				return len(gui.connections), 3
+			},
+			func() fyne.CanvasObject { return widget.NewLabel("") }, // Header
 			func(tci widget.TableCellID, co fyne.CanvasObject) { // Cell
 				if tci.Row == 0 {
 					if tci.Col == 0 {
@@ -142,10 +150,14 @@ func (gui *Gui) Start() {
 						co.(*widget.Label).SetText("Status")
 					}
 				} else {
+					if len(gui.connections) < tci.Row {
+						co.(*widget.Label).SetText("")
+						return
+					}
 					if tci.Col == 0 {
-						co.(*widget.Label).SetText(gui.connections[tci.Row].Addrs[0].String())
+						co.(*widget.Label).SetText(gui.connections[tci.Row-1].Addrs[0].String())
 					} else if tci.Col == 1 {
-						co.(*widget.Label).SetText(gui.connections[tci.Row].ID.String())
+						co.(*widget.Label).SetText(gui.connections[tci.Row-1].ID.String())
 					} else if tci.Col == 2 {
 						co.(*widget.Label).SetText("Connected")
 					}
@@ -156,6 +168,7 @@ func (gui *Gui) Start() {
 		gui.connectionsTable.SetColumnWidth(2, 100)
 		gui.connText = widget.NewEntry()
 		gui.connText.SetPlaceHolder("Paste Connection String here...")
+		gui.connText.Disable()
 
 		gui.connBtn = widget.NewButton("Connect", func() {
 			gui.progressbar.Show()
@@ -195,9 +208,6 @@ func (gui *Gui) Start() {
 					gui.startBtn,
 					gui.copyBtn,
 				),
-			)),
-			container.NewTabItem("Connections", container.NewVBox(
-				container.NewMax(gui.connectionsTable),
 				container.New(
 					layout.NewFormLayout(),
 					widget.NewLabel("Add new connection:"),
@@ -207,6 +217,7 @@ func (gui *Gui) Start() {
 					gui.connBtn,
 				),
 			)),
+			container.NewTabItem("Connections", container.NewMax(gui.connectionsTable)),
 		)
 		gui.tabs.DisableIndex(1)
 		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_READY)
@@ -221,8 +232,7 @@ func (gui *Gui) Start() {
 				gui.progressbar,
 			)),
 		)
-		gui.window.Resize(fyne.NewSize(1024, 600))
-		gui.window.SetPadded(false)
+		gui.window.Resize(fyne.NewSize(1024, 590))
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
 		gui.window.SetMaster()
