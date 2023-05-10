@@ -28,7 +28,7 @@ type Gui struct {
 	// Copy button widget
 	copyBtn *widget.Button
 	// Connections list widget
-	connectionsList *widget.List
+	connectionsTable *widget.Table
 	// Connect text widget
 	connText *widget.Entry
 	// Connect button widget
@@ -126,19 +126,27 @@ func (gui *Gui) Start() {
 			}
 		})
 		gui.copyBtn.Disable()
-		gui.connectionsList = widget.NewList(
-			func() int {
-				return len(gui.connections)
-			},
-			func() fyne.CanvasObject {
-				return widget.NewLabel("")
-			},
-			func(i widget.ListItemID, o fyne.CanvasObject) {
-				o.(*widget.Label).SetText(gui.connections[i].String())
+		gui.connectionsTable = widget.NewTable(
+			func() (int, int) { return len(gui.connections) + 1, 2 },    // Rows and columns
+			func() fyne.CanvasObject { return widget.NewLabel("Peer") }, // Header
+			func(tci widget.TableCellID, co fyne.CanvasObject) { // Cell
+				if tci.Row == 0 {
+					if tci.Col == 0 {
+						co.(*widget.Label).SetText("Address")
+					} else {
+						co.(*widget.Label).SetText("ID")
+					}
+				} else {
+					if tci.Col == 0 {
+						co.(*widget.Label).SetText(gui.connections[tci.Row].Addrs[0].String())
+					} else {
+						co.(*widget.Label).SetText(gui.connections[tci.Row].ID.String())
+					}
+				}
 			})
 		gui.tabs = container.NewAppTabs(
 			container.NewTabItem("Start Node", container.NewVBox(gui.text, gui.startBtn, gui.copyBtn)),
-			container.NewTabItem("Connections", container.NewVBox(gui.connectionsList)),
+			container.NewTabItem("Connections", container.NewVBox(gui.connectionsTable)),
 		)
 		gui.statusTextLabel = widget.NewLabel(STATUS_TEXT_STOPPED)
 		gui.progressbar = widget.NewProgressBarInfinite()
