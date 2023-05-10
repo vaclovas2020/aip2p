@@ -85,7 +85,7 @@ func (gui *Gui) Start() {
 		})
 		gui.copyBtn.Disable()
 		gui.window.SetContent(container.NewVBox(gui.text, gui.startBtn, gui.copyBtn))
-		gui.window.Resize(fyne.NewSize(600, 400))
+		gui.window.Resize(fyne.NewSize(600, 600))
 		gui.window.SetFixedSize(true)
 		gui.window.CenterOnScreen()
 		gui.window.SetMaster()
