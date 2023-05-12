@@ -2,7 +2,15 @@
 
 ## About Project
 
+Distributed Artificial Intelligens protocol implementation base on [libp2p](https://libp2p.io). Peer(s) share CPU and GPU resources with each other and makes Distributed Neural Network (DNN).
+
+Project is written using Go programming language.
+
 [![Go Reference](https://pkg.go.dev/badge/webimizer.dev/aip2p.svg)](https://pkg.go.dev/webimizer.dev/aip2p)
+
+## Supported platforms
+
+![Platforms](/images/platforms.png "Supported platforms")
 
 ## Mac OS Intel (64-bit) version
 
@@ -33,8 +41,6 @@ Notice: this command also removes installation files which are no longer require
 ![Aip2pWin64](/images/Win64.png "Aip2p Win64")
 
 [Download Windows setup (x64) v0.0.14](https://aip2p.app/downloads/Aip2pSetup.msi)
-
-Distributed Artificial Intelligens protocol implementation base on [libp2p](https://libp2p.io). Peer(s) share CPU and GPU resources with each other and makes Distributed Neural Network (DNN).
 
 ## Install from source code (for advanced users)
 1. Clone [this repository](https://webimizer.dev/aip2p)
