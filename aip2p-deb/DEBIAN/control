@@ -1,0 +1,5 @@
+Package: aip2p
+Version: 0.0.14
+Maintainer: github.com/vaclovas2020
+Architecture: amd64
+Description: AIP2P application for Debian-based OS
