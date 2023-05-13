@@ -5,4 +5,4 @@ deb-package:
     fyne package -os linux
 	tar -C ./aip2p-deb -xf AIP2P.tar.xz
 	rm ./aip2p-deb/Makefile
-    dpkg-deb --build weblang-deb
+    dpkg-deb --build aip2p-deb
