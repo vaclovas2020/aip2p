@@ -2,11 +2,13 @@ bin
 AIP2P.app
 .DS_Store
 aip2p
-AIP2P.exe
+*.exe
+*.msi
 windows/Aip2pSetup/Debug
 windows/Aip2pSetup/Release
 .vs
 .vscode
 .idea
-aip2p.dmg
-AIP2P.tar.xz
+*.dmg
+*.tar.xz
+*.deb
