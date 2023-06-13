@@ -124,6 +124,7 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 			s.LogErrorHandler(err)
 			return
 		}
+		s.LogInfoHandler("Received %d bytes from %s: %s", len(str), buff.Conn().RemoteMultiaddr().String(), str)
 		message := Message{}
 		err = json.Unmarshal([]byte(str), &message)
 		if err != nil {
@@ -142,7 +143,6 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 		default:
 			s.LogErrorHandler(errors.New("unknown message type `" + message.Type + "`"))
 		}
-		s.LogInfoHandler("Received from %s: %s", buff.Conn().RemoteMultiaddr().String(), str)
 	}
 }
 
@@ -153,7 +153,8 @@ func (s *DnnService) writeData(rw *bufio.ReadWriter, message *Message, buff netw
 		return
 	}
 	p = append(p, '\n')
-	s.LogInfoHandler("Sending %d bytes to %s..", len(p), buff.Conn().RemoteMultiaddr().String())
-	rw.Write(p)
+	str := string(p)
+	rw.WriteString(str)
 	rw.Flush()
+	s.LogInfoHandler("Sended %d bytes to %s: %s", len(str), buff.Conn().RemoteMultiaddr().String(), str)
 }

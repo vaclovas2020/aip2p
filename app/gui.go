@@ -4,6 +4,7 @@ package app
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -184,8 +185,6 @@ func (gui *Gui) Start() {
 				gui.connText.Enable()
 				return
 			}
-			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTED)
-			gui.LogInfo("Connected to %v.", gui.connText.Text)
 			gui.connText.SetText("")
 			gui.connText.Enable()
 			gui.progressbar.Stop()
@@ -275,6 +274,8 @@ func (gui *Gui) LogInfo(info string, args ...interface{}) {
 func (gui *Gui) AddPeerToList(peer *peer.AddrInfo) {
 	gui.connections = append(gui.connections, peer)
 	gui.connectionsTable.Refresh()
+	gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTED + " Peer(s): " + strconv.Itoa(len(gui.connections)))
+	gui.LogInfo("Connected to %v.", peer.Addrs[len(peer.Addrs)-1].String())
 }
 
 func (gui *Gui) RemovePeerFromList(id peer.ID) {
