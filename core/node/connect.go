@@ -9,7 +9,13 @@ import (
 	"webimizer.dev/aip2p/core/protocol/dnn"
 )
 
-func Connect(node *host.Host, address string, logInfoHandler dnn.LogInfoFunc, logErrorHandler dnn.LogErrorFunc, addPeerToListHandler dnn.AddPeerToListFunc) error {
+func Connect(
+	node *host.Host, address string,
+	logInfoHandler dnn.LogInfoFunc,
+	logErrorHandler dnn.LogErrorFunc,
+	addPeerToListHandler dnn.AddPeerToListFunc,
+	removePeerFromListHandler dnn.RemovePeerFromListFunc,
+) error {
 	addr, err := multiaddr.NewMultiaddr(address)
 	if err != nil {
 		return err
@@ -18,11 +24,11 @@ func Connect(node *host.Host, address string, logInfoHandler dnn.LogInfoFunc, lo
 	if err != nil {
 		return err
 	}
-	dnnService, err := dnn.NewDnnService(node, logInfoHandler, logErrorHandler, addPeerToListHandler)
+	err = (*node).Connect(context.Background(), *new)
 	if err != nil {
 		return err
 	}
-	err = (*node).Connect(context.Background(), *new)
+	dnnService, err := dnn.NewDnnService(node, logInfoHandler, logErrorHandler, addPeerToListHandler, removePeerFromListHandler)
 	if err != nil {
 		return err
 	}

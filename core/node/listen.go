@@ -8,7 +8,12 @@ import (
 )
 
 // Listen on tcp/ip4 on random port
-func Listen(logInfoHandler dnn.LogInfoFunc, logErrorHandler dnn.LogErrorFunc, addToListHandler dnn.AddPeerToListFunc) (*host.Host, error) {
+func Listen(
+	logInfoHandler dnn.LogInfoFunc,
+	logErrorHandler dnn.LogErrorFunc,
+	addToListHandler dnn.AddPeerToListFunc,
+	removePeerFromListHandler dnn.RemovePeerFromListFunc,
+) (*host.Host, error) {
 	node, err := libp2p.New(
 		libp2p.ListenAddrStrings(
 			"/ip4/0.0.0.0/tcp/0",
@@ -17,7 +22,7 @@ func Listen(logInfoHandler dnn.LogInfoFunc, logErrorHandler dnn.LogErrorFunc, ad
 	if err != nil {
 		return nil, err
 	}
-	dnnService, err := dnn.NewDnnService(&node, logInfoHandler, logErrorHandler, addToListHandler)
+	dnnService, err := dnn.NewDnnService(&node, logInfoHandler, logErrorHandler, addToListHandler, removePeerFromListHandler)
 	node.SetStreamHandler(dnn.ID, dnnService.StreamHandler)
 	return &node, err
 }

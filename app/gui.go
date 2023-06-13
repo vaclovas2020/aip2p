@@ -104,7 +104,7 @@ func (gui *Gui) Start() {
 				return
 			}
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTING)
-			peer, err := node.Listen(gui.LogInfo, gui.LogError, gui.AddPeerToList)
+			peer, err := node.Listen(gui.LogInfo, gui.LogError, gui.AddPeerToList, gui.RemovePeerFromList)
 			if err != nil {
 				gui.LogError(err)
 				return
@@ -177,7 +177,7 @@ func (gui *Gui) Start() {
 			gui.connText.Disable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTING)
 			gui.LogInfo("Connecting to %v...", gui.connText.Text)
-			err := node.Connect(gui.node, gui.connText.Text, gui.LogInfo, gui.LogError, gui.AddPeerToList)
+			err := node.Connect(gui.node, gui.connText.Text, gui.LogInfo, gui.LogError, gui.AddPeerToList, gui.RemovePeerFromList)
 			if err != nil {
 				gui.LogError(err)
 				gui.connBtn.Enable()
@@ -274,5 +274,15 @@ func (gui *Gui) LogInfo(info string, args ...interface{}) {
 
 func (gui *Gui) AddPeerToList(peer *peer.AddrInfo) {
 	gui.connections = append(gui.connections, peer)
+	gui.connectionsTable.Refresh()
+}
+
+func (gui *Gui) RemovePeerFromList(id peer.ID) {
+	for i, peer := range gui.connections {
+		if peer.ID == id {
+			gui.connections = append(gui.connections[:i], gui.connections[i+1:]...)
+			break
+		}
+	}
 	gui.connectionsTable.Refresh()
 }

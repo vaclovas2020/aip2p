@@ -11,20 +11,34 @@ import (
 )
 
 type DnnService struct {
-	Host                 *host.Host
-	LogInfoHandler       LogInfoFunc
-	LogErrorHandler      LogErrorFunc
-	AddPeerToListHandler AddPeerToListFunc
+	Host                      *host.Host
+	LogInfoHandler            LogInfoFunc
+	LogErrorHandler           LogErrorFunc
+	AddPeerToListHandler      AddPeerToListFunc
+	RemovePeerFromListHandler RemovePeerFromListFunc
 }
 
 type LogInfoFunc func(string, ...interface{})
 type LogErrorFunc func(error)
 type AddPeerToListFunc func(*peer.AddrInfo)
+type RemovePeerFromListFunc func(peer.ID)
 
 const ID protocol.ID = "/dnn/1.0.0"
 
-func NewDnnService(h *host.Host, logInfoHandler LogInfoFunc, logErrorHandler LogErrorFunc, addPeerToListHandler AddPeerToListFunc) (*DnnService, error) {
-	return &DnnService{Host: h, LogInfoHandler: logInfoHandler, LogErrorHandler: logErrorHandler, AddPeerToListHandler: addPeerToListHandler}, nil
+func NewDnnService(
+	h *host.Host,
+	logInfoHandler LogInfoFunc,
+	logErrorHandler LogErrorFunc,
+	addPeerToListHandler AddPeerToListFunc,
+	removePeerFromListHandler RemovePeerFromListFunc,
+) (*DnnService, error) {
+	return &DnnService{
+		Host:                      h,
+		LogInfoHandler:            logInfoHandler,
+		LogErrorHandler:           logErrorHandler,
+		AddPeerToListHandler:      addPeerToListHandler,
+		RemovePeerFromListHandler: removePeerFromListHandler,
+	}, nil
 }
 
 func (s *DnnService) StreamHandler(buff network.Stream) {
@@ -44,6 +58,7 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 	for {
 		str, err := rw.ReadString('\n')
 		if err != nil {
+			s.RemovePeerFromListHandler(buff.Conn().RemotePeer())
 			s.LogErrorHandler(err)
 			return
 		}
