@@ -35,7 +35,7 @@ func (s *DnnService) StreamHandler(buff network.Stream) {
 	rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
 	go s.readData(rw, buff)
-	go s.writeData(rw, []byte("Hello World\n"))
+	go s.writeData(rw, []byte("Hello World\n"), buff)
 
 	// stream 's' will stay open until you close it (or the other side closes it).
 }
@@ -51,7 +51,8 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 	}
 }
 
-func (s *DnnService) writeData(rw *bufio.ReadWriter, p []byte) {
+func (s *DnnService) writeData(rw *bufio.ReadWriter, p []byte, buff network.Stream) {
+	s.LogInfoHandler("Sending %d bytes to %s...", len(p), buff.Conn().RemoteMultiaddr().String())
 	rw.Write(p)
 	rw.Flush()
 }
