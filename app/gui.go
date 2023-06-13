@@ -98,13 +98,13 @@ func (gui *Gui) Start() {
 				gui.text.SetText(gui.logText)
 				gui.copyBtn.Disable()
 				gui.statusTextLabel.SetText(STATUS_TEXT_STOPPED)
-				gui.LogInfo(fmt.Sprintf("%s %s", STATUS_TEXT_STOPPED, START_LABEL_TEXT))
+				gui.LogInfo("%s %s", STATUS_TEXT_STOPPED, START_LABEL_TEXT)
 				gui.progressbar.Stop()
 				gui.progressbar.Hide()
 				return
 			}
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTING)
-			peer, err := node.Listen()
+			peer, err := node.Listen(gui.LogInfo, gui.LogError)
 			if err != nil {
 				gui.LogError(err)
 				return
@@ -119,7 +119,7 @@ func (gui *Gui) Start() {
 			gui.startBtn.SetText("Stop")
 			gui.tabs.EnableIndex(1)
 			gui.connText.Enable()
-			gui.LogInfo(fmt.Sprintf("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[len(addrs)-1].String()))
+			gui.LogInfo("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[len(addrs)-1].String())
 			gui.text.SetText(gui.logText)
 			gui.copyBtn.Enable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTED)
@@ -176,8 +176,8 @@ func (gui *Gui) Start() {
 			gui.connBtn.Disable()
 			gui.connText.Disable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTING)
-			gui.LogInfo(fmt.Sprintf("Connecting to %v...", gui.connText.Text))
-			peer, err := node.Connect(gui.node, gui.connText.Text)
+			gui.LogInfo("Connecting to %v...", gui.connText.Text)
+			peer, err := node.Connect(gui.node, gui.connText.Text, gui.LogInfo, gui.LogError)
 			if err != nil {
 				gui.LogError(err)
 				gui.connBtn.Enable()
@@ -187,7 +187,7 @@ func (gui *Gui) Start() {
 			gui.connections = append(gui.connections, peer)
 			gui.connectionsTable.Refresh()
 			gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTED)
-			gui.LogInfo(fmt.Sprintf("Connected to %v.", gui.connText.Text))
+			gui.LogInfo("Connected to %v.", gui.connText.Text)
 			gui.connText.SetText("")
 			gui.connText.Enable()
 			gui.progressbar.Stop()
@@ -246,7 +246,7 @@ func (gui *Gui) Start() {
 				gui.window.Hide()
 			})
 		}
-		gui.LogInfo(fmt.Sprintf("%s %s", STATUS_TEXT_READY, START_LABEL_TEXT))
+		gui.LogInfo("%s %s", STATUS_TEXT_READY, START_LABEL_TEXT)
 		if len(os.Args) > 1 && os.Args[1] == "systray" {
 			gui.app.Run()
 		} else {
@@ -268,8 +268,8 @@ func (gui *Gui) LogError(err error) {
 	gui.text.CursorRow = strings.Count(gui.logText, "\n")
 }
 
-func (gui *Gui) LogInfo(info string) {
-	gui.logText += fmt.Sprintf("[%s] %v\n", time.Now().Format(time.RFC1123), info)
+func (gui *Gui) LogInfo(info string, args ...interface{}) {
+	gui.logText += fmt.Sprintf("[%s] %s\n", time.Now().Format(time.RFC1123), fmt.Sprintf(info, args...))
 	gui.text.SetText(gui.logText)
 	gui.text.CursorRow = strings.Count(gui.logText, "\n")
 }

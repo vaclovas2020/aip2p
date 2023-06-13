@@ -2,7 +2,6 @@ package dnn
 
 import (
 	"bufio"
-	"log"
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -10,35 +9,39 @@ import (
 )
 
 type DnnService struct {
-	Host *host.Host
+	Host            *host.Host
+	LogInfoHandler  LogInfoFunc
+	LogErrorHandler LogErrorFunc
 }
+
+type LogInfoFunc func(string, ...interface{})
+type LogErrorFunc func(error)
 
 const ID protocol.ID = "/dnn/1.0.0"
 
-func NewDnnService(h *host.Host) (*DnnService, error) {
-	return &DnnService{Host: h}, nil
+func NewDnnService(h *host.Host, logInfoHandler LogInfoFunc, logErrorHandler LogErrorFunc) (*DnnService, error) {
+	return &DnnService{Host: h, LogInfoHandler: logInfoHandler, LogErrorHandler: logErrorHandler}, nil
 }
 
 func (s *DnnService) StreamHandler(buff network.Stream) {
-	log.Println("Got a new stream!")
-
+	s.LogInfoHandler("Got a new stream!")
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
-	go s.readData(rw)
+	go s.readData(rw, buff)
 	go s.writeData(rw, []byte("Hello World\n"))
 
 	// stream 's' will stay open until you close it (or the other side closes it).
 }
 
-func (s *DnnService) readData(rw *bufio.ReadWriter) {
+func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 	for {
 		str, err := rw.ReadString('\n')
 		if err != nil {
-			log.Println(err)
+			s.LogErrorHandler(err)
 			return
 		}
-		log.Printf("Received from %s: %s", (*s.Host).ID().String(), str)
+		s.LogInfoHandler("Received from %s: %s", buff.Conn().RemoteMultiaddr().String(), str)
 	}
 }
 
