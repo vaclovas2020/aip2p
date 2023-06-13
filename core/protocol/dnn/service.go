@@ -2,6 +2,10 @@ package dnn
 
 import (
 	"bufio"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -42,16 +46,74 @@ func NewDnnService(
 }
 
 func (s *DnnService) StreamHandler(buff network.Stream) {
-	addrs := make([]multiaddr.Multiaddr, 0, 1)
-	addrs = append(addrs, buff.Conn().RemoteMultiaddr())
-	s.AddPeerToListHandler(&peer.AddrInfo{ID: buff.Conn().RemotePeer(), Addrs: addrs})
-	// Create a buffer stream for non blocking read and write.
-	rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
+	go func() {
+		addrs := make([]multiaddr.Multiaddr, 0, 1)
+		addrs = append(addrs, buff.Conn().RemoteMultiaddr())
+		s.AddPeerToListHandler(&peer.AddrInfo{ID: buff.Conn().RemotePeer(), Addrs: addrs})
+		// Create a buffer stream for non blocking read and write.
+		rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
-	go s.readData(rw, buff)
-	go s.writeData(rw, []byte("Hello World\n"), buff)
+		go s.readData(rw, buff)
+		go s.writeData(rw, &Message{Type: TYPE_NODELIST, Data: s.prepareNodeList(buff)}, buff)
+	}()
+}
 
-	// stream 's' will stay open until you close it (or the other side closes it).
+func Connect(
+	node *host.Host, address string,
+	logInfoHandler LogInfoFunc,
+	logErrorHandler LogErrorFunc,
+	addPeerToListHandler AddPeerToListFunc,
+	removePeerFromListHandler RemovePeerFromListFunc,
+) error {
+	addr, err := multiaddr.NewMultiaddr(address)
+	if err != nil {
+		return err
+	}
+	new, err := peer.AddrInfoFromP2pAddr(addr)
+	if err != nil {
+		return err
+	}
+	err = (*node).Connect(context.Background(), *new)
+	if err != nil {
+		return err
+	}
+	dnnService, err := NewDnnService(node, logInfoHandler, logErrorHandler, addPeerToListHandler, removePeerFromListHandler)
+	if err != nil {
+		return err
+	}
+	s, err := (*node).NewStream(context.Background(), (*new).ID, ID)
+	if err != nil {
+		return err
+	}
+	dnnService.StreamHandler(s)
+	return nil
+}
+
+func (s *DnnService) prepareNodeList(buff network.Stream) string {
+	nodes := make([]Node, 0)
+	for _, node := range (*s.Host).Peerstore().Peers() {
+		if node != buff.Conn().RemotePeer() && (*s.Host).ID() != node {
+			addrs := (*s.Host).Peerstore().Addrs(node)
+			nodes = append(nodes, Node{ID: node, Address: addrs[len(addrs)-1].String()})
+		}
+	}
+	p, err := json.Marshal(NodeList{Nodes: nodes})
+	if err != nil {
+		s.LogErrorHandler(err)
+		return ""
+	}
+	return string(p)
+}
+
+func (s *DnnService) receiveNodeList(buff network.Stream, list *NodeList) {
+	for _, p := range list.Nodes {
+		if p.ID != buff.Conn().RemotePeer() && (*s.Host).ID() != p.ID {
+			addrs := (*s.Host).Peerstore().Addrs(p.ID)
+			if len(addrs) == 0 {
+				Connect(s.Host, fmt.Sprintf("%s/p2p/%v", p.Address, p.ID), s.LogInfoHandler, s.LogErrorHandler, s.AddPeerToListHandler, s.RemovePeerFromListHandler)
+			}
+		}
+	}
 }
 
 func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
@@ -62,12 +124,36 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 			s.LogErrorHandler(err)
 			return
 		}
+		message := Message{}
+		err = json.Unmarshal([]byte(str), &message)
+		if err != nil {
+			s.LogErrorHandler(err)
+			return
+		}
+		switch message.Type {
+		case TYPE_NODELIST:
+			list := NodeList{}
+			err = json.Unmarshal([]byte(message.Data), &list)
+			if err != nil {
+				s.LogErrorHandler(err)
+				return
+			}
+			s.receiveNodeList(buff, &list)
+		default:
+			s.LogErrorHandler(errors.New("unknown message type `" + message.Type + "`"))
+		}
 		s.LogInfoHandler("Received from %s: %s", buff.Conn().RemoteMultiaddr().String(), str)
 	}
 }
 
-func (s *DnnService) writeData(rw *bufio.ReadWriter, p []byte, buff network.Stream) {
-	s.LogInfoHandler("Sending %d bytes to %s...", len(p), buff.Conn().RemoteMultiaddr().String())
+func (s *DnnService) writeData(rw *bufio.ReadWriter, message *Message, buff network.Stream) {
+	p, err := json.Marshal(message)
+	if err != nil {
+		s.LogErrorHandler(err)
+		return
+	}
+	p = append(p, '\n')
+	s.LogInfoHandler("Sending %d bytes to %s..", len(p), buff.Conn().RemoteMultiaddr().String())
 	rw.Write(p)
 	rw.Flush()
 }
