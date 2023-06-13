@@ -67,7 +67,7 @@ const STATUS_TEXT_ERROR = "Error."
 // Start GUI Application main window
 func (gui *Gui) Start() {
 	_, err := os.Open("aip2p.lock")
-	if err != nil && os.IsNotExist(err) {
+	if (err != nil && os.IsNotExist(err)) || (len(os.Args) > 1 && os.Args[1] == "nolocks") {
 		f, err := os.Create("aip2p.lock")
 		if err != nil {
 			f.Write([]byte("1"))
