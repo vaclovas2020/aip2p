@@ -5,26 +5,32 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
+	"github.com/multiformats/go-multiaddr"
 )
 
 type DnnService struct {
-	Host            *host.Host
-	LogInfoHandler  LogInfoFunc
-	LogErrorHandler LogErrorFunc
+	Host                 *host.Host
+	LogInfoHandler       LogInfoFunc
+	LogErrorHandler      LogErrorFunc
+	AddPeerToListHandler AddPeerToListFunc
 }
 
 type LogInfoFunc func(string, ...interface{})
 type LogErrorFunc func(error)
+type AddPeerToListFunc func(*peer.AddrInfo)
 
 const ID protocol.ID = "/dnn/1.0.0"
 
-func NewDnnService(h *host.Host, logInfoHandler LogInfoFunc, logErrorHandler LogErrorFunc) (*DnnService, error) {
-	return &DnnService{Host: h, LogInfoHandler: logInfoHandler, LogErrorHandler: logErrorHandler}, nil
+func NewDnnService(h *host.Host, logInfoHandler LogInfoFunc, logErrorHandler LogErrorFunc, addPeerToListHandler AddPeerToListFunc) (*DnnService, error) {
+	return &DnnService{Host: h, LogInfoHandler: logInfoHandler, LogErrorHandler: logErrorHandler, AddPeerToListHandler: addPeerToListHandler}, nil
 }
 
 func (s *DnnService) StreamHandler(buff network.Stream) {
-	s.LogInfoHandler("Got a new stream!")
+	addrs := make([]multiaddr.Multiaddr, 0, 1)
+	addrs = append(addrs, buff.Conn().RemoteMultiaddr())
+	s.AddPeerToListHandler(&peer.AddrInfo{ID: buff.Conn().RemotePeer(), Addrs: addrs})
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
