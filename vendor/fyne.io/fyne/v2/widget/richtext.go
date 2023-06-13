@@ -348,17 +348,20 @@ func (t *RichText) rows() int {
 func (t *RichText) updateRowBounds() {
 	t.propertyLock.RLock()
 	var bounds []rowBoundary
-	maxWidth := t.size.Width - 2*theme.InnerPadding() + 2*t.inset.Width
+	innerPadding := theme.InnerPadding()
+	maxWidth := t.size.Width - 2*innerPadding + 2*t.inset.Width
 	wrapWidth := maxWidth
 
+	var currentBound *rowBoundary
 	var iterateSegments func(segList []RichTextSegment)
 	iterateSegments = func(segList []RichTextSegment) {
-		var currentBound *rowBoundary
 		for _, seg := range segList {
 			if parent, ok := seg.(RichTextBlock); ok {
-				iterateSegments(parent.Segments())
-				if !seg.Inline() {
+				segs := parent.Segments()
+				iterateSegments(segs)
+				if len(segs) > 0 && !segs[len(segs)-1].Inline() {
 					wrapWidth = maxWidth
+					currentBound = nil
 				}
 				continue
 			}
@@ -384,7 +387,7 @@ func (t *RichText) updateRowBounds() {
 
 			leftPad := float32(0)
 			if textSeg.Style == RichTextStyleBlockquote {
-				leftPad = theme.InnerPadding() * 2
+				leftPad = innerPadding * 2
 			}
 			retBounds := lineBounds(textSeg, t.Wrapping, wrapWidth-leftPad, maxWidth, func(text []rune) float32 {
 				return fyne.MeasureText(string(text), textSize, textStyle).Width
@@ -459,8 +462,13 @@ func (r *textRenderer) Layout(size fyne.Size) {
 	}
 	r.obj.propertyLock.RUnlock()
 
-	left := theme.InnerPadding() - r.obj.inset.Width
-	yPos := theme.InnerPadding() - r.obj.inset.Height
+	// Accessing theme here is slow, so we cache the value
+	innerPadding := theme.InnerPadding()
+	lineSpacing := theme.LineSpacing()
+
+	xInset := innerPadding - r.obj.inset.Width
+	left := xInset
+	yPos := innerPadding - r.obj.inset.Height
 	lineWidth := size.Width - left*2
 	var rowItems []fyne.CanvasObject
 	rowAlign := fyne.TextAlignLeading
@@ -478,12 +486,14 @@ func (r *textRenderer) Layout(size fyne.Size) {
 				if len(rowItems) != 0 {
 					width, _ := r.layoutRow(rowItems, rowAlign, left, yPos, lineWidth)
 					left += width
+					rowItems = nil
 				}
 				height := obj.MinSize().Height
 
 				obj.Move(fyne.NewPos(left, yPos))
 				obj.Resize(fyne.NewSize(lineWidth, height))
-				yPos += height + theme.LineSpacing()
+				yPos += height
+				left = xInset
 				continue
 			}
 			rowItems = append(rowItems, obj)
@@ -495,7 +505,7 @@ func (r *textRenderer) Layout(size fyne.Size) {
 			if text, ok := bound.segments[0].(*TextSegment); ok {
 				rowAlign = text.Style.Alignment
 				if text.Style == RichTextStyleBlockquote {
-					leftPad = theme.LineSpacing() * 4
+					leftPad = lineSpacing * 4
 				}
 			} else if link, ok := bound.segments[0].(*HyperlinkSegment); ok {
 				rowAlign = link.Alignment
@@ -507,7 +517,7 @@ func (r *textRenderer) Layout(size fyne.Size) {
 
 		lastSeg := bound.segments[len(bound.segments)-1]
 		if !lastSeg.Inline() && row < len(bounds)-1 && bounds[row+1].segments[0] != lastSeg { // ignore wrapped lines etc
-			yPos += theme.LineSpacing()
+			yPos += lineSpacing
 		}
 	}
 }
@@ -529,6 +539,9 @@ func (r *textRenderer) MinSize() fyne.Size {
 	width := float32(0)
 	rowHeight := float32(0)
 	rowWidth := float32(0)
+
+	// Accessing the theme here is slow, so we cache the value
+	lineSpacing := theme.LineSpacing()
 
 	i := 0
 	for row, bound := range bounds {
@@ -559,7 +572,7 @@ func (r *textRenderer) MinSize() fyne.Size {
 
 		lastSeg := bound.segments[len(bound.segments)-1]
 		if !lastSeg.Inline() && row < len(bounds)-1 && bounds[row+1].segments[0] != lastSeg { // ignore wrapped lines etc
-			height += theme.LineSpacing()
+			height += lineSpacing
 		}
 	}
 
@@ -670,6 +683,10 @@ func (r *textRenderer) layoutRow(texts []fyne.CanvasObject, align fyne.TextAlign
 	tallestBaseline := float32(0)
 	realign := false
 	baselines := make([]float32, len(texts))
+
+	// Access to theme is slow, so we cache the text size
+	textSize := theme.TextSize()
+
 	for i, text := range texts {
 		var size fyne.Size
 		if txt, ok := text.(*canvas.Text); ok {
@@ -685,7 +702,7 @@ func (r *textRenderer) layoutRow(texts []fyne.CanvasObject, align fyne.TextAlign
 		} else if c, ok := text.(*fyne.Container); ok {
 			wid := c.Objects[0]
 			if link, ok := wid.(*Hyperlink); ok {
-				s, base := fyne.CurrentApp().Driver().RenderedTextSize(link.Text, theme.TextSize(), link.TextStyle)
+				s, base := fyne.CurrentApp().Driver().RenderedTextSize(link.Text, textSize, link.TextStyle)
 				if base > tallestBaseline {
 					if tallestBaseline > 0 {
 						realign = true

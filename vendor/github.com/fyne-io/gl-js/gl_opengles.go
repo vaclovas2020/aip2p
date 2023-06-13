@@ -77,6 +77,10 @@ func BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha Enum) 
 	C.glBlendFuncSeparate(sfactorRGB.c(), dfactorRGB.c(), sfactorAlpha.c(), dfactorAlpha.c())
 }
 
+func BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1 int, mask, filter Enum) {
+	C.glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, C.GLbitfield(mask), filter.c())
+}
+
 func BufferData(target Enum, src []byte, usage Enum) {
 	C.glBufferData(target.c(), C.GLsizeiptr(len(src)), unsafe.Pointer(&src[0]), usage.c())
 }
@@ -490,6 +494,12 @@ func LinkProgram(p Program) {
 	C.glLinkProgram(p.c())
 }
 
+func ObjectLabel(o Object, label string) {
+	str := unsafe.Pointer(C.CString(label))
+	defer C.free(str)
+	C.glObjectLabel(o.Identifier().c(), C.GLUint(o.Name()), -1, (*C.GLchar)(str))
+}
+
 func PixelStorei(pname Enum, param int32) {
 	C.glPixelStorei(pname.c(), C.GLint(param))
 }
@@ -554,6 +564,10 @@ func TexImage2D(target Enum, level int, width, height int, format Enum, ty Enum,
 		p = unsafe.Pointer(&data[0])
 	}
 	C.glTexImage2D(target.c(), C.GLint(level), C.GLint(format), C.GLsizei(width), C.GLsizei(height), 0, format.c(), ty.c(), p)
+}
+
+func TexImage2DMultisample(target Enum, samples int, internalformat Enum, width, height int, fixedsamplelocations bool) {
+	println("TexImage2DMultisample: not available on OpenGL ES.")
 }
 
 func TexSubImage2D(target Enum, level int, x, y, width, height int, format, ty Enum, data []byte) {

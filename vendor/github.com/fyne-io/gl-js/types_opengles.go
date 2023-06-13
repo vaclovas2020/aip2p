@@ -64,6 +64,12 @@ type Uniform struct {
 	Value int32
 }
 
+// Object is a generic interface for OpenGL objects
+type Object interface {
+	Identifier() Enum
+	Name() uint32
+}
+
 var NoAttrib Attrib
 var NoProgram Program
 var NoShader Shader

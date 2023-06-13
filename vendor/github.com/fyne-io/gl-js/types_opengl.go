@@ -55,3 +55,34 @@ var NoFramebuffer Framebuffer
 var NoRenderbuffer Renderbuffer
 var NoTexture Texture
 var NoUniform Uniform
+
+// Object is a generic interface for OpenGL objects
+type Object interface {
+	Identifier() Enum
+	Name() uint32
+}
+
+// Implement Name() for the Object interface
+func (p Program) Name() uint32 {
+	return p.Value
+}
+
+func (s Shader) Name() uint32 {
+	return s.Value
+}
+
+func (b Buffer) Name() uint32 {
+	return b.Value
+}
+
+func (fb Framebuffer) Name() uint32 {
+	return fb.Value
+}
+
+func (rb Renderbuffer) Name() uint32 {
+	return rb.Value
+}
+
+func (t Texture) Name() uint32 {
+	return t.Value
+}

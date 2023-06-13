@@ -13,6 +13,7 @@ import (
 	"math"
 	"reflect"
 	"runtime"
+	"strconv"
 	"syscall/js"
 	"unsafe"
 )
@@ -179,7 +180,7 @@ func BlendEquation(mode Enum) {
 }
 
 func BlendEquationSeparate(modeRGB, modeAlpha Enum) {
-	c.Call("blendEquationSeparate", modeRGB, modeAlpha)
+	c.Call("blendEquationSeparate", int(modeRGB), int(modeAlpha))
 }
 
 func BlendFunc(sfactor, dfactor Enum) {
@@ -188,6 +189,11 @@ func BlendFunc(sfactor, dfactor Enum) {
 
 func BlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha Enum) {
 	c.Call("blendFuncSeparate", int(sfactorRGB), int(dfactorRGB), int(sfactorAlpha), int(dfactorAlpha))
+}
+
+func BlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1 int, mask, filter Enum) {
+	println("BlitFramebuffer: not yet tested (TODO: remove this after it's confirmed to work. Your feedback is welcome.)")
+	c.Call("blitFramebuffer", srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, int(mask), int(filter))
 }
 
 func BufferData(target Enum, data interface{}, usage Enum) {
@@ -231,15 +237,15 @@ func CompileShader(s Shader) {
 }
 
 func CompressedTexImage2D(target Enum, level int, internalformat Enum, width, height, border int, data interface{}) {
-	c.Call("compressedTexImage2D", int(target), level, internalformat, width, height, border, SliceToTypedArray(data))
+	c.Call("compressedTexImage2D", int(target), level, int(internalformat), width, height, border, SliceToTypedArray(data))
 }
 
 func CompressedTexSubImage2D(target Enum, level, xoffset, yoffset, width, height int, format Enum, data interface{}) {
-	c.Call("compressedTexSubImage2D", int(target), level, xoffset, yoffset, width, height, format, SliceToTypedArray(data))
+	c.Call("compressedTexSubImage2D", int(target), level, xoffset, yoffset, width, height, int(format), SliceToTypedArray(data))
 }
 
 func CopyTexImage2D(target Enum, level int, internalformat Enum, x, y, width, height, border int) {
-	c.Call("copyTexImage2D", int(target), level, internalformat, x, y, width, height, border)
+	c.Call("copyTexImage2D", int(target), level, int(internalformat), x, y, width, height, border)
 }
 
 func CopyTexSubImage2D(target Enum, level, xoffset, yoffset, x, y, width, height int) {
@@ -299,7 +305,7 @@ func DeleteTexture(v Texture) {
 }
 
 func DepthFunc(fn Enum) {
-	c.Call("depthFunc", fn)
+	c.Call("depthFunc", int(fn))
 }
 
 func DepthMask(flag bool) {
@@ -347,11 +353,11 @@ func Flush() {
 }
 
 func FramebufferRenderbuffer(target, attachment, rbTarget Enum, rb Renderbuffer) {
-	c.Call("framebufferRenderbuffer", target, attachment, int(rbTarget), rb.Value)
+	c.Call("framebufferRenderbuffer", int(target), int(attachment), int(rbTarget), rb.Value)
 }
 
 func FramebufferTexture2D(target, attachment, texTarget Enum, t Texture, level int) {
-	c.Call("framebufferTexture2D", target, attachment, int(texTarget), t.Value, level)
+	c.Call("framebufferTexture2D", int(target), int(attachment), int(texTarget), t.Value, level)
 }
 
 func FrontFace(mode Enum) {
@@ -420,7 +426,17 @@ func GetBufferParameteri(target, pname Enum) int {
 }
 
 func GetError() Enum {
-	return Enum(c.Call("getError").Int())
+	err := c.Call("getError")
+	var r int
+	switch err.Type() {
+	case js.TypeString:
+		r, _ = strconv.Atoi(err.String())
+	case js.TypeNumber:
+		r = err.Int()
+	default:
+		r = 0
+	}
+	return Enum(r)
 }
 
 func GetBoundFramebuffer() Framebuffer {
@@ -469,7 +485,7 @@ func GetShaderInfoLog(s Shader) string {
 
 func GetShaderPrecisionFormat(shadertype, precisiontype Enum) (rangeMin, rangeMax, precision int) {
 	println("GetShaderPrecisionFormat: not yet tested (TODO: remove this after it's confirmed to work. Your feedback is welcome.)")
-	format := c.Call("getShaderPrecisionFormat", shadertype, precisiontype)
+	format := c.Call("getShaderPrecisionFormat", int(shadertype), int(precisiontype))
 	rangeMin = format.Get("rangeMin").Int()
 	rangeMax = format.Get("rangeMax").Int()
 	precision = format.Get("precision").Int()
@@ -485,11 +501,11 @@ func GetString(pname Enum) string {
 }
 
 func GetTexParameterfv(dst []float32, target, pname Enum) {
-	dst[0] = float32(c.Call("getTexParameter", int(pname)).Float())
+	dst[0] = float32(c.Call("getTexParameter", int(target), int(pname)).Float())
 }
 
 func GetTexParameteriv(dst []int32, target, pname Enum) {
-	dst[0] = int32(c.Call("getTexParameter", int(pname)).Int())
+	dst[0] = int32(c.Call("getTexParameter", int(target), int(pname)).Int())
 }
 
 func GetUniformfv(dst []float32, src Uniform, p Program) {
@@ -519,8 +535,7 @@ func GetVertexAttribf(src Attrib, pname Enum) float32 {
 }
 
 func GetVertexAttribfv(dst []float32, src Attrib, pname Enum) {
-	println("GetVertexAttribfv: not yet tested (TODO: remove this after it's confirmed to work. Your feedback is welcome.)")
-	result := c.Call("getVertexAttrib")
+	result := c.Call("getVertexAttrib", src.Value, int(pname))
 	length := result.Length()
 	for i := 0; i < length; i++ {
 		dst[i] = float32(result.Index(i).Float())
@@ -532,8 +547,7 @@ func GetVertexAttribi(src Attrib, pname Enum) int32 {
 }
 
 func GetVertexAttribiv(dst []int32, src Attrib, pname Enum) {
-	println("GetVertexAttribiv: not yet tested (TODO: remove this after it's confirmed to work. Your feedback is welcome.)")
-	result := c.Call("getVertexAttrib")
+	result := c.Call("getVertexAttrib", src.Value, int(pname))
 	length := result.Length()
 	for i := 0; i < length; i++ {
 		dst[i] = int32(result.Index(i).Int())
@@ -580,6 +594,10 @@ func LinkProgram(p Program) {
 	c.Call("linkProgram", p.Value)
 }
 
+func ObjectLabel(o Object, label string) {
+	// not available in WebGL
+}
+
 func PixelStorei(pname Enum, param int32) {
 	c.Call("pixelStorei", int(pname), param)
 }
@@ -591,10 +609,10 @@ func PolygonOffset(factor, units float32) {
 func ReadPixels(dst []byte, x, y, width, height int, format, ty Enum) {
 	println("ReadPixels: not yet tested (TODO: remove this after it's confirmed to work. Your feedback is welcome.)")
 	if ty == Enum(UNSIGNED_BYTE) {
-		c.Call("readPixels", x, y, width, height, format, int(ty), dst)
+		c.Call("readPixels", x, y, width, height, int(format), int(ty), dst)
 	} else {
 		tmpDst := make([]float32, len(dst)/4)
-		c.Call("readPixels", x, y, width, height, format, int(ty), tmpDst)
+		c.Call("readPixels", x, y, width, height, int(format), int(ty), tmpDst)
 		for i, f := range tmpDst {
 			binary.LittleEndian.PutUint32(dst[i*4:], math.Float32bits(f))
 		}
@@ -606,7 +624,7 @@ func ReleaseShaderCompiler() {
 }
 
 func RenderbufferStorage(target, internalFormat Enum, width, height int) {
-	c.Call("renderbufferStorage", target, internalFormat, width, height)
+	c.Call("renderbufferStorage", int(target), int(internalFormat), width, height)
 }
 
 func SampleCoverage(value float32, invert bool) {
@@ -622,11 +640,11 @@ func ShaderSource(s Shader, src string) {
 }
 
 func StencilFunc(fn Enum, ref int, mask uint32) {
-	c.Call("stencilFunc", fn, ref, mask)
+	c.Call("stencilFunc", int(fn), ref, mask)
 }
 
 func StencilFuncSeparate(face, fn Enum, ref int, mask uint32) {
-	c.Call("stencilFuncSeparate", face, fn, ref, mask)
+	c.Call("stencilFuncSeparate", int(face), int(fn), ref, mask)
 }
 
 func StencilMask(mask uint32) {
@@ -634,19 +652,23 @@ func StencilMask(mask uint32) {
 }
 
 func StencilMaskSeparate(face Enum, mask uint32) {
-	c.Call("stencilMaskSeparate", face, mask)
+	c.Call("stencilMaskSeparate", int(face), mask)
 }
 
 func StencilOp(fail, zfail, zpass Enum) {
-	c.Call("stencilOp", fail, zfail, zpass)
+	c.Call("stencilOp", int(fail), int(zfail), int(zpass))
 }
 
 func StencilOpSeparate(face, sfail, dpfail, dppass Enum) {
-	c.Call("stencilOpSeparate", face, sfail, dpfail, dppass)
+	c.Call("stencilOpSeparate", int(face), int(sfail), int(dpfail), int(dppass))
 }
 
 func TexImage2D(target Enum, level int, width, height int, format Enum, ty Enum, data interface{}) {
 	c.Call("texImage2D", int(target), level, int(format), width, height, 0, int(format), int(ty), SliceToTypedArray(data))
+}
+
+func TexImage2DMultisample(target Enum, samples int, internalformat Enum, width, height int, fixedsamplelocations bool) {
+	println("TexImage2DMultisample: not available on WebGL.")
 }
 
 func TexSubImage2D(target Enum, level int, x, y, width, height int, format, ty Enum, data interface{}) {

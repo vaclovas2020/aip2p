@@ -23,7 +23,6 @@ import (
 	"github.com/libp2p/go-libp2p/p2p/host/eventbus"
 	"github.com/libp2p/go-libp2p/p2p/host/pstoremanager"
 	"github.com/libp2p/go-libp2p/p2p/host/relaysvc"
-	inat "github.com/libp2p/go-libp2p/p2p/net/nat"
 	relayv2 "github.com/libp2p/go-libp2p/p2p/protocol/circuitv2/relay"
 	"github.com/libp2p/go-libp2p/p2p/protocol/holepunch"
 	"github.com/libp2p/go-libp2p/p2p/protocol/identify"
@@ -252,6 +251,12 @@ func NewHost(n network.Network, opts *HostOpts) (*BasicHost, error) {
 	}
 
 	if opts.EnableHolePunching {
+		if opts.EnableMetrics {
+			hpOpts := []holepunch.Option{
+				holepunch.WithMetricsTracer(holepunch.NewMetricsTracer(holepunch.WithRegisterer(opts.PrometheusRegisterer)))}
+			opts.HolePunchingOptions = append(hpOpts, opts.HolePunchingOptions...)
+
+		}
 		h.hps, err = holepunch.NewService(h, h.ids, opts.HolePunchingOptions...)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create hole punch service: %w", err)
@@ -590,7 +595,6 @@ func (h *BasicHost) EventBus() event.Bus {
 func (h *BasicHost) SetStreamHandler(pid protocol.ID, handler network.StreamHandler) {
 	h.Mux().AddHandler(pid, func(p protocol.ID, rwc io.ReadWriteCloser) error {
 		is := rwc.(network.Stream)
-		is.SetProtocol(p)
 		handler(is)
 		return nil
 	})
@@ -604,7 +608,6 @@ func (h *BasicHost) SetStreamHandler(pid protocol.ID, handler network.StreamHand
 func (h *BasicHost) SetStreamHandlerMatch(pid protocol.ID, m func(protocol.ID) bool, handler network.StreamHandler) {
 	h.Mux().AddHandlerWithFunc(pid, m, func(p protocol.ID, rwc io.ReadWriteCloser) error {
 		is := rwc.(network.Stream)
-		is.SetProtocol(p)
 		handler(is)
 		return nil
 	})
@@ -767,8 +770,9 @@ func (h *BasicHost) Addrs() []ma.Multiaddr {
 	type transportForListeninger interface {
 		TransportForListening(a ma.Multiaddr) transport.Transport
 	}
+
 	type addCertHasher interface {
-		AddCertHashes(m ma.Multiaddr) ma.Multiaddr
+		AddCertHashes(m ma.Multiaddr) (ma.Multiaddr, bool)
 	}
 
 	addrs := h.AddrsFactory(h.AllAddrs())
@@ -790,7 +794,11 @@ func (h *BasicHost) Addrs() []ma.Multiaddr {
 			if !ok {
 				continue
 			}
-			addrs[i] = tpt.AddCertHashes(addr)
+			addrWithCerthash, added := tpt.AddCertHashes(addr)
+			addrs[i] = addrWithCerthash
+			if !added {
+				log.Debug("Couldn't add certhashes to webtransport multiaddr because we aren't listening on webtransport")
+			}
 		}
 	}
 	return addrs
@@ -807,20 +815,6 @@ func (h *BasicHost) NormalizeMultiaddr(addr ma.Multiaddr) ma.Multiaddr {
 		return out
 	}
 	return addr
-}
-
-// mergeAddrs merges input address lists, leave only unique addresses
-func dedupAddrs(addrs []ma.Multiaddr) (uniqueAddrs []ma.Multiaddr) {
-	exists := make(map[string]bool)
-	for _, addr := range addrs {
-		k := string(addr.Bytes())
-		if exists[k] {
-			continue
-		}
-		exists[k] = true
-		uniqueAddrs = append(uniqueAddrs, addr)
-	}
-	return uniqueAddrs
 }
 
 // AllAddrs returns all the addresses of BasicHost at this moment in time.
@@ -847,99 +841,18 @@ func (h *BasicHost) AllAddrs() []ma.Multiaddr {
 		finalAddrs = append(finalAddrs, resolved...)
 	}
 
-	finalAddrs = dedupAddrs(finalAddrs)
+	finalAddrs = network.DedupAddrs(finalAddrs)
 
-	var natMappings []inat.Mapping
-
-	// natmgr is nil if we do not use nat option;
-	// h.natmgr.NAT() is nil if not ready, or no nat is available.
-	if h.natmgr != nil && h.natmgr.NAT() != nil {
-		natMappings = h.natmgr.NAT().Mappings()
-	}
-
-	if len(natMappings) > 0 {
+	// use nat mappings if we have them
+	if h.natmgr != nil && h.natmgr.HasDiscoveredNAT() {
 		// We have successfully mapped ports on our NAT. Use those
 		// instead of observed addresses (mostly).
-
-		// First, generate a mapping table.
-		// protocol -> internal port -> external addr
-		ports := make(map[string]map[int]net.Addr)
-		for _, m := range natMappings {
-			addr, err := m.ExternalAddr()
-			if err != nil {
-				// mapping not ready yet.
-				continue
-			}
-			protoPorts, ok := ports[m.Protocol()]
-			if !ok {
-				protoPorts = make(map[int]net.Addr)
-				ports[m.Protocol()] = protoPorts
-			}
-			protoPorts[m.InternalPort()] = addr
-		}
-
 		// Next, apply this mapping to our addresses.
 		for _, listen := range listenAddrs {
-			found := false
-			transport, rest := ma.SplitFunc(listen, func(c ma.Component) bool {
-				if found {
-					return true
-				}
-				switch c.Protocol().Code {
-				case ma.P_TCP, ma.P_UDP:
-					found = true
-				}
-				return false
-			})
-			if !manet.IsThinWaist(transport) {
+			extMaddr := h.natmgr.GetMapping(listen)
+			if extMaddr == nil {
+				// not mapped
 				continue
-			}
-
-			naddr, err := manet.ToNetAddr(transport)
-			if err != nil {
-				log.Error("error parsing net multiaddr %q: %s", transport, err)
-				continue
-			}
-
-			var (
-				ip       net.IP
-				iport    int
-				protocol string
-			)
-			switch naddr := naddr.(type) {
-			case *net.TCPAddr:
-				ip = naddr.IP
-				iport = naddr.Port
-				protocol = "tcp"
-			case *net.UDPAddr:
-				ip = naddr.IP
-				iport = naddr.Port
-				protocol = "udp"
-			default:
-				continue
-			}
-
-			if !ip.IsGlobalUnicast() && !ip.IsUnspecified() {
-				// We only map global unicast & unspecified addresses ports.
-				// Not broadcast, multicast, etc.
-				continue
-			}
-
-			mappedAddr, ok := ports[protocol][iport]
-			if !ok {
-				// Not mapped.
-				continue
-			}
-
-			mappedMaddr, err := manet.FromNetAddr(mappedAddr)
-			if err != nil {
-				log.Errorf("mapped addr can't be turned into a multiaddr %q: %s", mappedAddr, err)
-				continue
-			}
-
-			extMaddr := mappedMaddr
-			if rest != nil {
-				extMaddr = ma.Join(extMaddr, rest)
 			}
 
 			// if the router reported a sane address
@@ -997,8 +910,83 @@ func (h *BasicHost) AllAddrs() []ma.Multiaddr {
 		}
 		finalAddrs = append(finalAddrs, observedAddrs...)
 	}
+	finalAddrs = network.DedupAddrs(finalAddrs)
+	finalAddrs = inferWebtransportAddrsFromQuic(finalAddrs)
 
-	return dedupAddrs(finalAddrs)
+	return finalAddrs
+}
+
+var wtComponent = ma.StringCast("/webtransport")
+
+// inferWebtransportAddrsFromQuic infers more webtransport addresses from QUIC addresses.
+// This is useful when we discover our public QUIC address, but haven't discovered our public WebTransport addrs.
+// If we see that we are listening on the same port for QUIC and WebTransport,
+// we can be pretty sure that the WebTransport addr will be reachable if the
+// QUIC one is.
+// We assume the input is deduped.
+func inferWebtransportAddrsFromQuic(in []ma.Multiaddr) []ma.Multiaddr {
+	// We need to check if we are listening on the same ip+port for QUIC and WebTransport.
+	// If not, there's nothing to do since we can't infer anything.
+
+	// Count the number of QUIC addrs, this will let us allocate just once at the beginning.
+	quicAddrCount := 0
+	for _, addr := range in {
+		if _, lastComponent := ma.SplitLast(addr); lastComponent.Protocol().Code == ma.P_QUIC_V1 {
+			quicAddrCount++
+		}
+	}
+	quicOrWebtransportAddrs := make(map[string]struct{}, quicAddrCount)
+	webtransportAddrs := make(map[string]struct{}, quicAddrCount)
+	foundSameListeningAddr := false
+	for _, addr := range in {
+		isWebtransport, numCertHashes := libp2pwebtransport.IsWebtransportMultiaddr(addr)
+		if isWebtransport {
+			for i := 0; i < numCertHashes; i++ {
+				// Remove certhashes
+				addr, _ = ma.SplitLast(addr)
+			}
+			webtransportAddrs[addr.String()] = struct{}{}
+			// Remove webtransport component, now it's a multiaddr that ends in /quic-v1
+			addr, _ = ma.SplitLast(addr)
+		}
+
+		if _, lastComponent := ma.SplitLast(addr); lastComponent.Protocol().Code == ma.P_QUIC_V1 {
+			addrStr := addr.String()
+			if _, ok := quicOrWebtransportAddrs[addrStr]; ok {
+				foundSameListeningAddr = true
+			} else {
+				quicOrWebtransportAddrs[addrStr] = struct{}{}
+			}
+		}
+	}
+
+	if !foundSameListeningAddr {
+		return in
+	}
+
+	if len(webtransportAddrs) == 0 {
+		// No webtransport addresses, we aren't listening on any webtransport
+		// address, so we shouldn't add any.
+		return in
+	}
+
+	out := make([]ma.Multiaddr, 0, len(in)+(quicAddrCount-len(webtransportAddrs)))
+	for _, addr := range in {
+		// Add all the original addresses
+		out = append(out, addr)
+		if _, lastComponent := ma.SplitLast(addr); lastComponent.Protocol().Code == ma.P_QUIC_V1 {
+			// Convert quic to webtransport
+			addr = addr.Encapsulate(wtComponent)
+			if _, ok := webtransportAddrs[addr.String()]; ok {
+				// We already have this address
+				continue
+			}
+			// Add the new inferred address
+			out = append(out, addr)
+		}
+	}
+
+	return out
 }
 
 // SetAutoNat sets the autonat service for the host.

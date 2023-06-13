@@ -77,6 +77,7 @@ const (
 	BACK                                         = 0x0405
 	FRONT_AND_BACK                               = 0x0408
 	TEXTURE_2D                                   = 0x0DE1
+	TEXTURE_2D_MULTISAMPLE                       = 0x9100
 	CULL_FACE                                    = 0x0B44
 	BLEND                                        = 0x0BE2
 	DITHER                                       = 0x0BD0
@@ -84,6 +85,7 @@ const (
 	DEPTH_TEST                                   = 0x0B71
 	SCISSOR_TEST                                 = 0x0C11
 	POLYGON_OFFSET_FILL                          = 0x8037
+	MULTISAMPLE                                  = 0x809D
 	SAMPLE_ALPHA_TO_COVERAGE                     = 0x809E
 	SAMPLE_COVERAGE                              = 0x80A0
 	INVALID_ENUM                                 = 0x0500
@@ -275,6 +277,9 @@ const (
 	LOW_INT                                      = 0x8DF3
 	MEDIUM_INT                                   = 0x8DF4
 	HIGH_INT                                     = 0x8DF5
+	BUFFER                                       = 0x82E0
+	SHADER                                       = 0x82E1
+	PROGRAM                                      = 0x82E2
 	FRAMEBUFFER                                  = 0x8D40
 	RENDERBUFFER                                 = 0x8D41
 	RGBA4                                        = 0x8056
@@ -305,6 +310,8 @@ const (
 	FRAMEBUFFER_UNSUPPORTED                      = 0x8CDD
 	FRAMEBUFFER_BINDING                          = 0x8CA6
 	RENDERBUFFER_BINDING                         = 0x8CA7
+	READ_FRAMEBUFFER                             = 0x8CA8
+	DRAW_FRAMEBUFFER                             = 0x8CA9
 	MAX_RENDERBUFFER_SIZE                        = 0x84E8
 	INVALID_FRAMEBUFFER_OPERATION                = 0x0506
 )

@@ -84,4 +84,4 @@ Perl, Python, Scala, .Net. and the Go url standard library.
 > This package was initially based on the work from ttacon/uri (credits: Trey Tacon).
 > Extra features like MySQL URIs present in the original repo have been removed.
 
-A lot of improvements have been brought by the incredible guys at [`fyne-io`](github.com/fyne-io). Thanks all.
+A lot of improvements have been brought by the incredible guys at [`fyne-io`](https://github.com/fyne-io). Thanks all.

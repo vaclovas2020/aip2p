@@ -51,3 +51,34 @@ var NoFramebuffer Framebuffer
 var NoRenderbuffer Renderbuffer
 var NoTexture Texture
 var NoUniform Uniform
+
+// Object is a generic interface for OpenGL objects
+type Object interface {
+	Identifier() Enum
+	Name() *js.Object
+}
+
+// Implement Name() for the Object interface
+func (p Program) Name() *js.Object {
+	return p.Object
+}
+
+func (s Shader) Name() *js.Object {
+	return s.Object
+}
+
+func (b Buffer) Name() *js.Object {
+	return b.Object
+}
+
+func (fb Framebuffer) Name() *js.Object {
+	return fb.Object
+}
+
+func (rb Renderbuffer) Name() *js.Object {
+	return rb.Object
+}
+
+func (t Texture) Name() *js.Object {
+	return t.Object
+}
