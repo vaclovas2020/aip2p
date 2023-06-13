@@ -115,11 +115,11 @@ func (gui *Gui) Start() {
 				return
 			}
 			gui.node = peer
-			gui.address = addrs[0].String()
+			gui.address = addrs[len(addrs)-1].String()
 			gui.startBtn.SetText("Stop")
 			gui.tabs.EnableIndex(1)
 			gui.connText.Enable()
-			gui.LogInfo(fmt.Sprintf("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[0].String()))
+			gui.LogInfo(fmt.Sprintf("%s Your P2P node address: %v", STATUS_TEXT_STARTED, (*gui.node).Addrs()[len(addrs)-1].String()))
 			gui.text.SetText(gui.logText)
 			gui.copyBtn.Enable()
 			gui.statusTextLabel.SetText(STATUS_TEXT_STARTED)
@@ -155,7 +155,7 @@ func (gui *Gui) Start() {
 						return
 					}
 					if tci.Col == 0 {
-						co.(*widget.Label).SetText(gui.connections[tci.Row-1].Addrs[0].String())
+						co.(*widget.Label).SetText(gui.connections[tci.Row-1].Addrs[len(gui.connections[tci.Row-1].Addrs)-1].String())
 					} else if tci.Col == 1 {
 						co.(*widget.Label).SetText(gui.connections[tci.Row-1].ID.String())
 					} else if tci.Col == 2 {
