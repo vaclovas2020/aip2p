@@ -6,42 +6,43 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
+	"github.com/libp2p/go-libp2p/core/protocol"
 )
 
-type Aip2pService struct {
+type DnnService struct {
 	Host *host.Host
 }
 
-const ID string = "/dnn/1.0.0"
+const ID protocol.ID = "/dnn/1.0.0"
 
-func NewAip2pService(h *host.Host) (*Aip2pService, error) {
-	return &Aip2pService{Host: h}, nil
+func NewDnnService(h *host.Host) (*DnnService, error) {
+	return &DnnService{Host: h}, nil
 }
 
-func (s *Aip2pService) StreamHandler(buff network.Stream) {
+func (s *DnnService) StreamHandler(buff network.Stream) {
 	log.Println("Got a new stream!")
 
 	// Create a buffer stream for non blocking read and write.
 	rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
-	go readData(rw)
-	go writeData(rw, []byte("Hello World\n"))
+	go s.readData(rw)
+	go s.writeData(rw, []byte("Hello World\n"))
 
 	// stream 's' will stay open until you close it (or the other side closes it).
 }
 
-func readData(rw *bufio.ReadWriter) {
+func (s *DnnService) readData(rw *bufio.ReadWriter) {
 	for {
 		str, err := rw.ReadString('\n')
 		if err != nil {
 			log.Println(err)
 			return
 		}
-		log.Printf("Received: %s", str)
+		log.Printf("Received from %s: %s", (*s.Host).ID().String(), str)
 	}
 }
 
-func writeData(rw *bufio.ReadWriter, p []byte) {
+func (s *DnnService) writeData(rw *bufio.ReadWriter, p []byte) {
 	rw.Write(p)
 	rw.Flush()
 }
