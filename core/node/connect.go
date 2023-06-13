@@ -5,7 +5,6 @@ import (
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
-	"github.com/libp2p/go-libp2p/core/peerstore"
 	"github.com/multiformats/go-multiaddr"
 	"webimizer.dev/aip2p/core/protocol/dnn"
 )
@@ -23,11 +22,14 @@ func Connect(node *host.Host, address string, logInfoHandler dnn.LogInfoFunc, lo
 	if err != nil {
 		return nil, err
 	}
+	err = (*node).Connect(context.Background(), *new)
+	if err != nil {
+		return nil, err
+	}
 	s, err := (*node).NewStream(context.Background(), (*new).ID, dnn.ID)
 	if err != nil {
 		return nil, err
 	}
-	(*node).Peerstore().AddAddrs((*new).ID, (*new).Addrs, peerstore.PermanentAddrTTL)
 	dnnService.StreamHandler(s)
 	return new, nil
 }
