@@ -122,6 +122,7 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 		if err != nil {
 			s.RemovePeerFromListHandler(buff.Conn().RemotePeer())
 			s.LogErrorHandler(err)
+			Connect(s.Host, fmt.Sprintf("%s/p2p/%v", buff.Conn().RemoteMultiaddr().String(), buff.Conn().RemotePeer()), s.LogInfoHandler, s.LogErrorHandler, s.AddPeerToListHandler, s.RemovePeerFromListHandler)
 			return
 		}
 		s.LogInfoHandler("Received %d bytes from %s: %s", len(str), buff.Conn().RemoteMultiaddr().String(), str)
