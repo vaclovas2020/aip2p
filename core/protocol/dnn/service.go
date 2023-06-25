@@ -53,8 +53,17 @@ func (s *DnnService) StreamHandler(buff network.Stream) {
 		// Create a buffer stream for non blocking read and write.
 		rw := bufio.NewReadWriter(bufio.NewReader(buff), bufio.NewWriter(buff))
 
-		go s.readData(rw, buff)
-		go s.writeData(rw, &Message{Type: TYPE_NODELIST, Data: s.prepareNodeList(buff)}, buff)
+		// Create input and output channels to read and write data.
+		input := make(chan *Message)
+		output := make(chan *Message)
+
+		// Create a thread to read and write data.
+		go s.readData(rw, buff, input)
+		go s.writeData(rw, output, buff)
+		go s.receiveMessage(buff, input)
+
+		list := &Message{Type: TYPE_NODELIST, Data: s.prepareNodeList(buff)}
+		output <- list
 	}()
 }
 
@@ -116,13 +125,27 @@ func (s *DnnService) receiveNodeList(buff network.Stream, list *NodeList) {
 	}
 }
 
-func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
+func (s *DnnService) receiveMessage(buff network.Stream, msg <-chan *Message) {
+	message := <-msg
+	switch message.Type {
+	case TYPE_NODELIST:
+		list := NodeList{}
+		err := json.Unmarshal([]byte(message.Data), &list)
+		if err != nil {
+			s.LogErrorHandler(err)
+			return
+		}
+		s.receiveNodeList(buff, &list)
+	default:
+		s.LogErrorHandler(errors.New("unknown message type `" + message.Type + "`"))
+	}
+}
+
+func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream, output chan<- *Message) {
 	for {
 		str, err := rw.ReadString('\n')
 		if err != nil {
 			s.RemovePeerFromListHandler(buff.Conn().RemotePeer())
-			s.LogErrorHandler(err)
-			Connect(s.Host, fmt.Sprintf("%s/p2p/%v", buff.Conn().RemoteMultiaddr().String(), buff.Conn().RemotePeer()), s.LogInfoHandler, s.LogErrorHandler, s.AddPeerToListHandler, s.RemovePeerFromListHandler)
 			return
 		}
 		s.LogInfoHandler("Received %d bytes from %s: %s", len(str), buff.Conn().RemoteMultiaddr().String(), str)
@@ -132,23 +155,12 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream) {
 			s.LogErrorHandler(err)
 			return
 		}
-		switch message.Type {
-		case TYPE_NODELIST:
-			list := NodeList{}
-			err = json.Unmarshal([]byte(message.Data), &list)
-			if err != nil {
-				s.LogErrorHandler(err)
-				return
-			}
-			s.receiveNodeList(buff, &list)
-		default:
-			s.LogErrorHandler(errors.New("unknown message type `" + message.Type + "`"))
-		}
+		output <- &message
 	}
 }
 
-func (s *DnnService) writeData(rw *bufio.ReadWriter, message *Message, buff network.Stream) {
-	p, err := json.Marshal(message)
+func (s *DnnService) writeData(rw *bufio.ReadWriter, message <-chan *Message, buff network.Stream) {
+	p, err := json.Marshal(<-message)
 	if err != nil {
 		s.LogErrorHandler(err)
 		return

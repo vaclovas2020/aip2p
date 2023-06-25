@@ -282,8 +282,10 @@ func (gui *Gui) RemovePeerFromList(id peer.ID) {
 	for i, peer := range gui.connections {
 		if peer.ID == id {
 			gui.connections = append(gui.connections[:i], gui.connections[i+1:]...)
+			gui.LogInfo("Disconnected from %v.", peer.Addrs[len(peer.Addrs)-1].String())
 			break
 		}
 	}
 	gui.connectionsTable.Refresh()
+	gui.statusTextLabel.SetText(STATUS_TEXT_CONNECTED + " Peer(s): " + strconv.Itoa(len(gui.connections)))
 }
