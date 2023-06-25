@@ -141,7 +141,7 @@ func (s *DnnService) receiveMessage(buff network.Stream, msg <-chan *Message) {
 	}
 }
 
-func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream, output chan<- *Message) {
+func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream, msg chan<- *Message) {
 	for {
 		str, err := rw.ReadString('\n')
 		if err != nil {
@@ -155,7 +155,7 @@ func (s *DnnService) readData(rw *bufio.ReadWriter, buff network.Stream, output 
 			s.LogErrorHandler(err)
 			return
 		}
-		output <- &message
+		msg <- &message
 	}
 }
 
